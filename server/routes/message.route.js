@@ -1,9 +1,12 @@
 import express from "express";
+import { addMessage, deleteMessage, editMessage } from "../controller/message.controller.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-router.get('/test/', (res,req) => {
-    req.send('shhhhhhj');
-})
+router.post('/add/:chatId', verifyToken, addMessage);
+router.put("/edit/:chatId", verifyToken, editMessage);
+router.delete("/:chatId", verifyToken, deleteMessage);
 
-export { router as messageRouter };
+
+export default router;

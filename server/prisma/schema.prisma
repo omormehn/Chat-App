@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                        String
+  email                       String    @unique
+  password                    String
+  bio                         String?
+  avatar                      String?
+  verificationToken           String
+  verificationTokenExpiresAt  DateTime
+  isEmailVerified             Boolean   @default(false)
+  resetPasswordToken          String?
+  resetPasswordTokenExpiresAt DateTime?
+  lastSeen                    DateTime  @default(now())
+  chats                       Chat[]
+  messages                    Message[]
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+}
+
+model Chat {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String?
+  users       User      @relation(fields: [userIds], references: [id])
+  userIds     String[]  @db.ObjectId
+  seenBy      String[]  @db.ObjectId
+  lastMessage String?
+  messages    Message[]
+  createdAt   DateTime  @default(now())
+}
+
+model Message {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  content     String
+  senderId    String   @db.ObjectId
+  chatId      String   @db.ObjectId
+  sender      User     @relation(fields: [senderId], references: [id])
+  chat        Chat     @relation(fields: [chatId], references: [id])
+  mediaUrl    String?
+  messageType String   @default("text")
+  status      String   @default("sent")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// model Contacts {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   userId    String
+//   contactId String
+//   type      String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   user      User     @relation(fields: [userId], references: [id])
+// }

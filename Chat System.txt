@@ -1,0 +1,17 @@
+Technologies
+Backend
+	Mongo db
+	Prisma
+	Mailtrap...Sendgrid, postmark
+	Node
+	Firebase, Firebase Cloud Messaging
+	SocketIO
+	Redis?
+	passportjs
+	
+Frontend
+	React
+	Tailwind css
+	Material Tailwind
+	Redux
+	Cloudinary

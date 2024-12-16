@@ -1,29 +1,43 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+import express from "express";
+import cors from 'cors';
+import cookieParser from "cookie-parser";
+import chatRouter from './routes/chat.route.js';
+import messageRouter from "./routes/message.route.js";
+import authRouter from "./routes/auth.route.js";
+import userRouter from "./routes/user.route.js";
+
+
+import dotenv from 'dotenv';
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
+dotenv.config()
+
+
+app.use(cors(
+  {
     origin: "http://localhost:5173",
-    methods: [ 'GET', 'POST' ],
-  },
-});
+    credentials: true,
+  }
+))
+app.use(express.json());
+app.use(cookieParser());
 
 
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-  socket.on("disconnect", () => {
-    console.log("User  disconnected:", socket.id);
-  });
+app.use("/auth", authRouter);
+app.use("", userRouter);
 
-   socket.on("sendMessage", (message) => {
-      io.emit("message", message);
-   });
-});
 
-const PORT = 5000;
-server.listen(PORT, () => {
+
+
+app.use('/chats', chatRouter);
+app.use("/messages", messageRouter);
+
+
+
+
+
+
+const PORT = process.env.PORT
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
