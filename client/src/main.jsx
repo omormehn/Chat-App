@@ -6,6 +6,7 @@ import { AuthContextProvider } from "./context/authContext.jsx";
 import { ChatContextProvider } from "./context/ChatContext.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { SocketContextProvider } from "./context/SocketContext.jsx";
+import { ThemeProvider } from "@material-tailwind/react";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <AuthContextProvider>
         <ChatContextProvider>
           <SocketContextProvider>
-            <App />
+            <ThemeProvider>
+              <App />
+            </ThemeProvider>
           </SocketContextProvider>
         </ChatContextProvider>
       </AuthContextProvider>

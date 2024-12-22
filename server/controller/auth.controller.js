@@ -132,6 +132,8 @@ export const profileSetup = async (req, res) => {
   }
 };
 
+
+
 export const validate = (req, res) => {
   res.status(200).json({ message: "Token is valid", user: req.user });
 };

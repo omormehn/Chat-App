@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
+import toast from "react-hot-toast";
 
 const AuthContext = createContext();
 
@@ -24,6 +25,7 @@ export const AuthContextProvider = ({ children }) => {
       });
       setUser(userResponse.data);
     } catch (error) {
+      toast.info("Session Expired, Please Login again")
       navigate("/login");
       console.log("Invalid or expired token", error.response?.data);
       setUser(null);

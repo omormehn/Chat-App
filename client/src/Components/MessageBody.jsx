@@ -1,17 +1,28 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
+import { useContext, useEffect, useRef, useState } from "react";
+import { PuffLoader } from "react-spinners";
+import { api } from "../utils/api";
+import { format } from "timeago.js";
+
+/* Icons */
 import { BsLink45Deg } from "react-icons/bs";
 import { BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineSend } from "react-icons/ai";
+import { IoMdTime } from "react-icons/io";
+import { TiMediaPlay } from "react-icons/ti";
+
+/* Context Api */
 import ChatContext from "../context/ChatContext";
-import { useContext, useEffect, useRef, useState } from "react";
 import AuthContext from "../context/authContext";
-import { api } from "../utils/api";
-import { format } from "timeago.js";
+import SocketContext from "../context/SocketContext";
+
+
+/* Emoji */
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
-import SocketContext from "../context/SocketContext";
-import { IoMdTime } from "react-icons/io";
 
-import { TiMediaPlay } from "react-icons/ti";
+/* Hook */
 import useGetChats from "../hooks/useGetChats";
 
 const MessageBody = () => {
@@ -76,7 +87,9 @@ const MessageBody = () => {
 
       setChats((prevChats) =>
         prevChats.map((chat) =>
-          chat.id === newMessage.chatId ? { ...chat, lastMessage: message } : chat
+          chat.id === newMessage.chatId
+            ? { ...chat, lastMessage: message }
+            : chat
         )
       );
 
@@ -143,7 +156,11 @@ const MessageBody = () => {
   }, [chat, socket]);
 
   if (!chat) {
-    return <p>Loading chat...</p>;
+    return (
+      <div className="h-screen flexCenter">
+        <PuffLoader size={50} />
+      </div>
+    );
   }
 
   return (
@@ -159,21 +176,25 @@ const MessageBody = () => {
                     message.senderId === user.id ? "items-end" : "items-start"
                   }`}
                 >
-                  <div className="message-card flex flex-col relative">
-                    <p>{message.content}</p>
-                    <small className="message-time">
-                      {format(message.createdAt)}
-                    </small>
-                    <div className="absolute right-3 bottom-5">
-                      {message.loading ? (
-                        <div>
-                          <IoMdTime />
-                        </div>
-                      ) : (
-                        <div>
-                          <TiMediaPlay size={13} />
-                        </div>
-                      )}
+                  <div className="message-card ">
+                    <div className="flex flex-col gap-1">
+                      <div>
+                        <p>{message.content}</p>
+                      </div>
+                      <div className="flex gap-4 justify-between">
+                        <small className="message-time">
+                          {format(message.createdAt)}
+                        </small>
+                        {message.loading ? (
+                          <div>
+                            <IoMdTime />
+                          </div>
+                        ) : (
+                          <div>
+                            <TiMediaPlay size={13} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import { IoIosSearch } from "react-icons/io";
 import { GoArrowLeft } from "react-icons/go";
 
+import { format } from "timeago.js";
 import { useMediaQuery } from "react-responsive";
 import ChatContext from "../context/ChatContext";
 import MessageBody from "./MessageBody";
@@ -27,14 +28,14 @@ const onlineStatus = () => {
 
   return (
     selectedChat && (
-      <div className=" ">
+      <div className="bg-[#94A3B8]">
         {isDesktop ? (
           <div className="xl:w-[65%] md:w-[55%] lg:w-[60%] right-0 h-screen overflow-hidden absolute bg-[#F5F3F3] hidden md:block">
             {selectedChat ? (
               <div>
-                <div className="bg-slate-400 px-6 z-50 top py-3 flex justify-between items-center fixed">
+                <div className="bg-[#94A3B8] px-6 z-50 top py-3 flex justify-between items-center fixed">
                   <div className="flex flex-row z-50 items-center gap-4 cursor-pointer hover:bg-slate-500 py-2 px-4">
-                    <div className="rounded-full w-10 h-10 bg-black border-black"></div>
+                    <img src={selectedChat.receiver.avatar}  className="size-12 rounded-full" alt="" />
                     <div>
                       <h1 className=" text-lg">{selectedChat.receiver.name}</h1>
                       <p>
@@ -57,7 +58,7 @@ const onlineStatus = () => {
                 {/* bottom */}
               </div>
             ) : (
-              <div className="flex items-center justify-center w-full h-screen">
+              <div className="flex items-center  justify-center w-full h-screen">
                 <h1>Click on a chat to start a conversation</h1>
               </div>
             )}
@@ -68,7 +69,7 @@ const onlineStatus = () => {
               <div className="flex  flex-col h-screen md:hidden chat-card">
                 {/* top */}
                 <div className="fixed w-full md:w-[45%] lg:w-[40%] z-50  xl:w-[35%]">
-                  <div className="bg-slate-400 px-6 top py-3 flex justify-between  items-center">
+                  <div className="bg-[#94A3B8]  px-6 top py-3 flex justify-between  items-center">
                     <div className="flex  items-center gap-4 ">
                       <div
                         onClick={() => {
@@ -81,10 +82,7 @@ const onlineStatus = () => {
                       <div>
                         <h1>{selectedChat.receiver.name}</h1>
                         <p>
-                          {new Date(user.lastSeen).toLocaleString("en-US", {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
+                          {format(user.lastSeen)}
                         </p>
                       </div>
                     </div>

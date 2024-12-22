@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api.js";
 import AuthContext from "../context/authContext.jsx";
 import toast from "react-hot-toast";
+import { Input, Typography } from "@material-tailwind/react";
 const Login = () => {
   const [showReg, setshowReg] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,9 +28,9 @@ const Login = () => {
       newErrors.password = "Password is required.";
     }
     if (showReg) {
-        if (password !== confirmPassword) {
-          newErrors.confirmPassword = "Password does not match";
-        }
+      if (password !== confirmPassword) {
+        newErrors.confirmPassword = "Password does not match";
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -85,7 +86,7 @@ const Login = () => {
         navigate("/chats");
       }
     } catch (error) {
-      setError(error.response.data);
+      setError(error.response ? error.response.data.message : error.message);
     } finally {
       setLoading(false);
     }
@@ -111,8 +112,9 @@ const Login = () => {
           <div className="flex-1 hidden sm:block">
             <img src="third.jpg" alt="Login Visual" className="h-full w-full" />
           </div>
+
           {/* Card sections */}
-          <div className="flex-1 p-6 sm:p-10 flexCol">
+          <div className="flex-1 bg-black p-6 sm:p-10 flexCol">
             {/* Intro Texts */}
             <div className="mb-4">
               <h1 className="text-3xl text-white font-serif ">
@@ -121,37 +123,68 @@ const Login = () => {
             </div>
             <div className="pt-2">
               <form action="" onSubmit={showReg ? handleSignup : handleLogin}>
-                {/* Reg Form */}
+                {/* login and reg Form */}
                 <div className="flex flex-col gap-4">
                   <div>
-                    <input
+                    <Input
                       type="email"
                       name="email"
+                      label="Email"
+                      variant="standard"
                       placeholder="Email"
-                      className="bg-slate-800 w-full text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="bg-slate-800 w-full text-white px-2 border-0 rounded-lg  focus:ring-blue-400 "
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm">{errors.email}</p>
                     )}
                   </div>
                   <div>
-                    <input
+                    <Input
                       type="password"
                       name="password"
+                      label="Password"
+                      variant="standard"
                       placeholder="Password"
-                      className="bg-slate-800 w-full text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      className="bg-slate-800 w-full text-white px-2 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
-                    {errors.password && (
+                    <p className="text-red-500">{error}</p>
+                    {errors.password ? (
                       <p className="text-red-500 text-sm">{errors.password}</p>
+                    ) : (
+                      showReg && (
+                        <Typography
+                          variant="small"
+                          color="gray"
+                          className="mt-2 flex items-center gap-1 font-normal"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="-mt-px h-4 w-4"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Use at least 8 characters, one uppercase, one
+                          lowercase and one number and a special character.
+                        </Typography>
+                      )
                     )}
                   </div>
+
                   {showReg && (
                     <div>
-                      <input
+                      <Input
                         type="password"
                         name="confirmpassword"
+                        label="Confirm Password"
                         placeholder="Confirm Password"
-                        className="bg-slate-800 w-full text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        variant="standard"
+                        className="bg-slate-800 w-full text-white border-0 px-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                       {errors.confirmPassword && (
                         <p className="text-red-500 text-sm">
@@ -172,7 +205,7 @@ const Login = () => {
                     </p>
                   )}
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2 pt-2 text-slate-300 text-sm">
+                <div className="flex flex-col sm:flex-row gap-2 text-white pt-2 text-slate-300 text-sm">
                   {showReg ? (
                     <p>Have have an account? </p>
                   ) : (
@@ -186,7 +219,7 @@ const Login = () => {
                   </p>
                 </div>
                 {/* Button */}
-                <button className="primary-btn w-full mt-4" type="submit">
+                <button className="primary-btn w-full mt-4 " type="submit">
                   {loading ? (
                     <div className="dots">
                       <div className="dot"></div>
@@ -201,10 +234,10 @@ const Login = () => {
                 </button>
               </form>
               {/* Divider */}
-              <div className="flexCenter pt-4 text-slate-400 md:gap-2">
-                <div className="h-px bg-white flex-1 "></div>
+              <div className="flexCenter pt-4 text-white md:gap-2">
+                <div className="h-px bg-white flex-1  "></div>
                 {!showReg ? (
-                  <p className="px-4 text-sm">Or sign in with</p>
+                  <p className="px-4 text-sm ">Or sign in with</p>
                 ) : (
                   <p className="px-4 text-sm">Or sign up with</p>
                 )}

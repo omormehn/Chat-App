@@ -26,7 +26,7 @@
     @apply w-full bg-black;
   }
   .message-card {
-    @apply max-w-[70%] px-4 py-2 relative flex rounded-lg shadow-md text-black bg-white break-words;
+    @apply max-w-[70%] px-4 py-2  rounded-lg shadow-md text-black bg-white break-words;
   }
 }
 

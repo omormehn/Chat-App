@@ -1,4 +1,3 @@
-import { constants } from "crypto";
 import prisma from "../prisma/config.js";
 export const getChats = async (req, res) => {
   const userId = req.user.id;
@@ -9,7 +8,7 @@ export const getChats = async (req, res) => {
 
     for (const chat of chats) {
       const receiverId = chat.userIds.find((id) => id !== userId);
-      const receiver = await prisma.user.findUnique({
+      const receiver = await prisma.user.findFirst({
         where: { id: receiverId },
         select: {
           id: true,
@@ -57,6 +56,9 @@ export const getChat = async (req, res) => {
 export const addChat = async (req, res) => {
   const { id } = req.user;
   const { receiverId } = req.body;
+    if (!id || !receiverId) {
+      return res.status(400).json({ message: "Missing required parameters" });
+    }
   try {
     const existingChat = await prisma.chat.findFirst({
       where: {

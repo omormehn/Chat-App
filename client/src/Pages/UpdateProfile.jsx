@@ -1,36 +1,46 @@
 /* eslint-disable no-unused-vars */
-import { useContext, useState } from "react";
-import avatar from "../avatar.svg";
+import { useContext, useEffect, useRef, useState } from "react";
+import defaultAvatar from "../avatar.svg";
 import AuthContext from "../context/authContext";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
-import { FaPencilAlt } from "react-icons/fa";
-import { api } from "../utils/api";
+import { FaPlus } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 
+import { api } from "../utils/api";
 import { toast } from "react-hot-toast";
 
 function UpdateProfile() {
+  const { user, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [avat, setAvatar] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [avatar, setAvatar] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [bio, setBio] = useState(user.bio);
 
-  const { user, updateUser } = useContext(AuthContext);
+  const fileInputRef = useRef(null);
+  console.log(user);
 
   const handleSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
 
-    const formData = new FormData(e.target);
+    const formData = new FormData();
 
-    const { name, email, bio } = Object.fromEntries(formData);
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("bio", bio);
+    formData.append("avatar", avatar);
     try {
-      const response = await api.post("update-profile/", {
-        name,
-        email,
-        bio,
-        avatar: avat,
+      const response = await api.post("update-profile/", formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      updateUser(response.data.user);
+      console.log(response.data);
+      updateUser({ ...response.data.user, avatar: response.data.fileUrl });
       toast.success("Profile updated successfully!");
       navigate("/profile");
     } catch (error) {
@@ -40,6 +50,27 @@ function UpdateProfile() {
       setLoading(false);
     }
   };
+
+  const handleFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+ 
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreview(url);
+      setAvatar(file);
+    }
+  };
+
+  const handleDeleteImage = async (e) => {};
+
+   useEffect(() => {
+     setPreview(null);
+   }, []);
 
   return (
     <div>
@@ -57,22 +88,60 @@ function UpdateProfile() {
           <h1 className="text-center font-bold text-xl">Edit Profile</h1>
         </div>
         {/* top 2 */}
-        <div className="avatar relative pt-2">
-          <img src={avatar} alt="Default Avatar" width={100} height={100} />
-          <div className="absolute bottom-0 right-0 rounded-full border-2 p-1.5 bg-slate-400">
-            <FaPencilAlt />
-          </div>
-        </div>
+
         {/* Mobile Options */}
-        <div className="flex md:hidden flex-col gap-4">
+        <div className="flex flex-col md:items-center gap-4">
           {/* opt 1 */}
           <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+            <div
+              className="avatar relative pt-2 hover:scale-110 "
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+            >
+              <img
+                src={preview || user.avatar || defaultAvatar}
+                alt="Default Avatar"
+                width={100}
+                height={100}
+                className="rounded-full size-24 "
+              />
+
+              {hovered && (
+                <div
+                  className="absolute inset-0 top-2 left-0 flex justify-center items-center cursor-pointer "
+                  onClick={avatar ? handleDeleteImage : handleFileInput}
+                >
+                  {avatar ? (
+                    <FaTrash
+                      size={30}
+                      opacity={0.7}
+                      className="cursor-pointer"
+                    />
+                  ) : (
+                    <FaPlus
+                      size={30}
+                      opacity={0.7}
+                      className="cursor-pointer"
+                    />
+                  )}
+                </div>
+              )}
+              <input
+                name="avatar"
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileChange}
+                className="hidden"
+                accept=".png, .jpg, .jpeg, .svg, .webp"
+              />
+            </div>
             <div className="flex flex-col gap-4 ">
               <h1 className="font-semibold">Name:</h1>
               <div className="border-b-2 w-full">
                 <input
                   type="text"
                   name="name"
+                  onChange={(e) => setName(e.target.value)}
                   defaultValue={user.name}
                   className="border-0 w-full"
                   required
@@ -86,6 +155,7 @@ function UpdateProfile() {
                 <input
                   type="text"
                   name="email"
+                  onChange={(e) => setEmail(e.target.value)}
                   defaultValue={user.email}
                   required
                   className="border-0 w-full"
@@ -99,66 +169,13 @@ function UpdateProfile() {
                   type="text"
                   name="bio"
                   defaultValue={user.bio}
+                  onChange={(e) => setBio(e.target.value)}
                   required
                   className="border-0 w-full"
                 />
               </div>
             </div>
 
-            <button type="submit" className="primary-btn px-4">
-              {loading ? (
-                <div className="dots">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                </div>
-              ) : (
-                "Save"
-              )}
-            </button>
-          </form>
-        </div>
-        {/* Desktop Options */}
-        <div className="hidden md:flex justify-center items-center pt-10">
-          <form
-            className="flex flex-col gap-8"
-            action=""
-            onSubmit={handleSubmit}
-          >
-            {/* opt 1 */}
-            <div className="flex flex-col gap-4 ">
-              <h1 className="font-semibold">Name:</h1>
-              <div className="border-b-2 ">
-                <input
-                  type="text"
-                  defaultValue={user.name}
-                
-                  className="border-0 w-full"
-                />
-              </div>
-            </div>
-            {/* opt 2 */}
-            <div className="flex flex-col gap-4 ">
-              <h1 className="font-semibold">Email:</h1>
-              <div className="border-b-2 w-full">
-                <input
-                  type="text"
-                  defaultValue={user.email}
-                  className="border-0 w-full"
-                />
-              </div>
-            </div>
-            {/* opt 3 */}
-            <div className="flex flex-col gap-4 ">
-              <h1 className="font-semibold">Bio:</h1>
-              <div className="border-b-2 ">
-                <input
-                  type="text"
-                  defaultValue={user.bio}
-                  className="border-0 w-full"
-                />
-              </div>
-            </div>
             <button type="submit" className="primary-btn px-4">
               {loading ? (
                 <div className="dots">

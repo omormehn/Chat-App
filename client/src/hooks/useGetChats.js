@@ -32,7 +32,7 @@ const useGetChats = () => {
     loading,
     error,
     chats,
-    setChats  
+    setChats, getChats
   };
 };
 

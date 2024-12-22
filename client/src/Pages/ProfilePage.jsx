@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import avatar from "/src/avatar.svg";
+import defaultAvatar from "/src/avatar.svg";
 import AuthContext from "../context/authContext";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, updateUser } = useContext(AuthContext);
+  console.log(user.avatar)
   
 
   const handleLogout = async () => {
@@ -37,7 +38,11 @@ function ProfilePage() {
         {/* top 2 */}
         <div className="md:hidden">
           <div className="avatar  relative pt-2">
-            <img src={avatar} alt="Default Avatar" width={100} height={100} />
+            <img
+              src={user.avatar ? user.avatar : defaultAvatar}
+              alt="User Avatar"
+              className="size-24 rounded-full"
+            />
             <div
               onClick={() => {
                 navigate("/profile/update");
@@ -93,7 +98,11 @@ function ProfilePage() {
           {/* image */}
           <div className="">
             <div className="avatar  relative pt-2">
-              <img src={avatar} alt="Default Avatar" width={100} height={100} />
+              <img
+                src={user.avatar}
+                alt="Default Avatar"
+                className="rounded-full size-24"
+              />
               <div
                 onClick={() => {
                   navigate("/profile/update");
