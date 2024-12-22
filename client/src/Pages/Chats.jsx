@@ -1,5 +1,6 @@
 import ChatLeft from "../Components/ChatLeft";
 import ChatRight from "../Components/ChatRight";
+import Footer from "../Components/Footer";
 
 const Chats = () => {
   return (
@@ -11,6 +12,7 @@ const Chats = () => {
       <div className="">
         <ChatRight />
       </div>
+      <Footer/>
     </div>
   );
 };
