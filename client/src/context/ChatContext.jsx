@@ -23,9 +23,8 @@ export const ChatContextProvider = ({ children }) => {
         ...response.data,
         messages: response.data.chat.messages || [],
       });
-      console.log(chat.chat.id);
     } catch (error) {
-      console.log(error);
+      throw new Error(error);
     } finally {
       setLoading(false);
     }
@@ -36,7 +35,7 @@ export const ChatContextProvider = ({ children }) => {
       const response = await api.put(`chats/read-chat/${chatId}`);
       setChatDetails({ ...response.data });
     } catch (error) {
-      console.log(error);
+      throw new Error(error);
     } finally {
       setLoading(false);
     }

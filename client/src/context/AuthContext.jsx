@@ -25,11 +25,11 @@ export const AuthContextProvider = ({ children }) => {
       });
       setUser(userResponse.data);
     } catch (error) {
-      toast.info("Session Expired, Please Login again")
+      toast.error("Session Expired, Please Login again")
       navigate("/login");
-      console.log("Invalid or expired token", error.response?.data);
       setUser(null);
       localStorage.removeItem("user");
+      throw new Error("Invalid or expired token", error.response?.data);
     } finally {
       setLoading(false);
     }

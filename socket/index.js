@@ -18,7 +18,6 @@ const addUser = (userId, socketId) => {
   if (!userExits) {
     onlineUser.push({ userId, socketId });
   }
-  console.log(onlineUser);
 };
 
 const removeUser = (socketId) => {
@@ -32,7 +31,6 @@ const getUser = (userId) => {
 
 
 io.on("connection", (socket) => {
-  console.log("a new client connected");
 
   socket.on("newUser", (userId) => {
     addUser(userId, socket.id);
@@ -40,7 +38,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", ({data, receiverId}) => {
-    console.log("Message sent", data);
     const receiver = getUser(receiverId);
     if (receiver) {
       io.to(receiver.socketId).emit("receiveMessage", data)
@@ -49,7 +46,6 @@ io.on("connection", (socket) => {
   })
 
   socket.on("disconnect", () => {
-    console.log("Client disconnected: ", socket.id);
     removeUser(socket.id);
     io.emit("onlineUsers", onlineUser);
   });

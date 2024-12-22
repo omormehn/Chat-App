@@ -11,16 +11,13 @@ export const SocketContextProvider = ({children}) => {
     const { user } = useContext(AuthContext);
 
     useEffect(() => {
-        const newSocket = (io('http://localhost:3001'))
+        const newSocket = io("https://chat-app-42yc.onrender.com");
 
         newSocket.on("onlineUsers", (users) => {
-            console.log("Online Users", users)
             setOnlineUsers(users)
         })
 
-        newSocket.on("disconnect", () =>{
-            console.log("Disconnected from the server", newSocket.id);
-        });
+        newSocket.on("disconnect", () =>{});
 
         setSocket(newSocket);
 

@@ -14,7 +14,7 @@ export const getChats = async (req, res) => {
           id: true,
           name: true,
           avatar: true,
-          lastSeen: true
+          lastSeen: true,
         },
       });
       chat.receiver = receiver;
@@ -22,7 +22,7 @@ export const getChats = async (req, res) => {
     res.status(200).json({ chats });
   } catch (error) {
     res.status(501).json({ message: "Internal server error", error });
-    console.error(error);
+    throw new Error(error);
   }
 };
 export const getChat = async (req, res) => {
@@ -44,21 +44,21 @@ export const getChat = async (req, res) => {
         },
       },
     });
-   
+
     if (!chat) return req.status(404).json({ message: "Chat not found" });
-    res.status(200).json({chat});
+    res.status(200).json({ chat });
   } catch (error) {
     res.status(501).json({ message: "Internal server error", error });
-    console.error(error);
+    throw new Error(error);
   }
 };
 
 export const addChat = async (req, res) => {
   const { id } = req.user;
   const { receiverId } = req.body;
-    if (!id || !receiverId) {
-      return res.status(400).json({ message: "Missing required parameters" });
-    }
+  if (!id || !receiverId) {
+    return res.status(400).json({ message: "Missing required parameters" });
+  }
   try {
     const existingChat = await prisma.chat.findFirst({
       where: {
@@ -77,7 +77,7 @@ export const addChat = async (req, res) => {
     res.status(200).json(chat);
   } catch (error) {
     res.status(501).json({ message: "Internal server error", error });
-    console.error(error);
+    throw new Error(error);
   }
 };
 
@@ -101,7 +101,7 @@ export const readChat = async (req, res) => {
     res.json(chat);
   } catch (error) {
     res.status(501).json({ message: "Internal Server Error" });
-    console.error(error);
+    throw new Error(error);
   }
 };
 export const readChats = async (req, res) => {
@@ -121,7 +121,7 @@ export const readChats = async (req, res) => {
     });
   } catch (error) {
     res.status(501).json({ message: "Internal Server Error" });
-    console.error(error);
+    throw new Error(error);
   }
 };
 
@@ -138,7 +138,7 @@ export const deleteChats = async (req, res) => {
     res.status(200).json({ message: "Chats deleted Successfully" });
   } catch (error) {
     res.status(501).json({ message: "Internal Server Error" });
-    console.error(error);
+    throw new Error(error);
   }
 };
 export const deleteChat = async (req, res) => {
@@ -153,10 +153,10 @@ export const deleteChat = async (req, res) => {
         },
       },
     });
-    if (!chat) return res.status(404).json({message: "Chat not found"});
+    if (!chat) return res.status(404).json({ message: "Chat not found" });
     res.status(200).json({ message: "Chat deleted Successfully" });
   } catch (error) {
     res.status(501).json({ message: "Internal Server Error" });
-    console.error(error);
+    throw new Error(error);
   }
 };

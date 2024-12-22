@@ -2,23 +2,14 @@
 import { BsLink45Deg } from "react-icons/bs";
 import { BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineSend } from "react-icons/ai";
-import { CgUserAdd } from "react-icons/cg";
-import { IoFilterOutline } from "react-icons/io5";
 import { GoArrowLeft } from "react-icons/go";
 import { IoIosSearch } from "react-icons/io";
 
-import { Navigate, useNavigate } from "react-router-dom";
-import useGetChats from "../hooks/useGetChats";
-import { useEffect, useState } from "react";
-import { api } from "../utils/api";
+import { Navigate } from "react-router-dom";
+
 import ChatLeft from "../Components/ChatLeft";
 
 const Chat = () => {
-  const navigate = useNavigate();
-  const { chats, chat } = useGetChats();
-  const [loading, setLoading] = useState(false);
-
-  console.log(chat);
 
   return (
     <div className="w-full flex h-screen bg-[#F5F3F3]">

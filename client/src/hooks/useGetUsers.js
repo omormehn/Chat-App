@@ -9,7 +9,7 @@ const useGetUsers = () => {
       const response = await api.get("/users/");
       setUsers(response.data);
     } catch (error) {
-      console.error(error);
+      throw new Error(error);
     }
   };
   useEffect(() => {

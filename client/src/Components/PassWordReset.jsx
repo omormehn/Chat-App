@@ -35,7 +35,6 @@ const PassWordReset = () => {
     } catch (error) {
       toast.error("Password Change failed!");
       setError(error.response.data.message);
-      console.error(error.response.data.message);
     }
   };
   return (

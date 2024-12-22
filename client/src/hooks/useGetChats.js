@@ -17,7 +17,7 @@ const useGetChats = () => {
       setChats(response.data.chats);
     } catch (error) {
       setError(error);
-      console.log(error);
+      throw new Error(error);
     } finally {
       setLoading(false);
     }

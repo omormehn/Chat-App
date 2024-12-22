@@ -36,8 +36,8 @@ export const register = async (req, res) => {
       ...user
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Internal server error" });
+    throw new Error(error);
   }
 };
 export const login = async (req, res) => {
@@ -72,8 +72,8 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ success: false, message: "Internal server error" });
+    throw new Error(error);
   }
 };
 export const logout = async (req, res) => {
@@ -100,8 +100,8 @@ export const forgotPassword = async (req, res) => {
     });
     res.status(200).json({ message: "Password Updated Successfully", user });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Internal Service error" });
+    throw new Error(error);
   }
 };
 
@@ -127,8 +127,8 @@ export const profileSetup = async (req, res) => {
     });
     res.json(updateUser)
   } catch (error) {
-    console.error(error)
     res.status(500).json({message: "Internal service error"})
+    throw new Error(error);
   }
 };
 

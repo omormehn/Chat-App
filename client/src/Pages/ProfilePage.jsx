@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, updateUser } = useContext(AuthContext);
-  console.log(user.avatar)
+  
   
 
   const handleLogout = async () => {

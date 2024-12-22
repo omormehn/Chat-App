@@ -36,7 +36,6 @@ const ForgotPassword = () => {
     } catch (error) {
       toast.error("Password update failed!");
       setError(error.response.data.message)
-      console.error(error.response.data.message);
     }
   };
 

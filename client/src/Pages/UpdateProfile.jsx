@@ -22,7 +22,7 @@ function UpdateProfile() {
   const [bio, setBio] = useState(user.bio);
 
   const fileInputRef = useRef(null);
-  console.log(user);
+
 
   const handleSubmit = async (e) => {
     setLoading(true);
@@ -39,13 +39,13 @@ function UpdateProfile() {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
-      console.log(response.data);
+     
       updateUser({ ...response.data.user, avatar: response.data.fileUrl });
       toast.success("Profile updated successfully!");
       navigate("/profile");
     } catch (error) {
       toast.error("Error updating Profile!");
-      console.error(error);
+      throw new Error(error);
     } finally {
       setLoading(false);
     }

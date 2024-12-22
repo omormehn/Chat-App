@@ -35,7 +35,6 @@ const ChatLeft = () => {
       !chats.some((chat) => chat.userIds.includes(currentUser.id))
     );
   });
-  console.log(chats);
 
   const handleChatClick = (chat) => {
     if (chat.id === selectedChat?.id) {
@@ -54,7 +53,6 @@ const ChatLeft = () => {
   };
   const addChat = async (receiver) => {
     const receiverId = receiver.id;
-    console.log(receiverId);
     try {
       setOpen(false);
       await api.post("chats/add-chat", {
@@ -63,8 +61,8 @@ const ChatLeft = () => {
 
       await getChats();
     } catch (error) {
-      console.error(error);
       toast.error("Failed to add chat");
+      throw new Error(error);
     }
   };
 

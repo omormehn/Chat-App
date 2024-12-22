@@ -1,7 +1,7 @@
 import {  Routes, Route } from "react-router-dom";
 import Login from "./Pages/Login";
 import Chats from "./Pages/Chats";
-import Chat from "./Pages/Chat";
+
 import ProfilePage from "./Pages/ProfilePage";
 import CompleteProfile from "./Pages/CompleteProfile";
 import UpdateProfile from "./Pages/UpdateProfile";
@@ -39,14 +39,6 @@ function App() {
           element={
             <ProtectedRoute>
               <Chats />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/chats/chat"
-          element={
-            <ProtectedRoute>
-              <Chat />
             </ProtectedRoute>
           }
         />

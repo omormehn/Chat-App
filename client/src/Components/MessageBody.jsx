@@ -54,7 +54,7 @@ const MessageBody = () => {
           await getChat(selectedChat.id);
           await readChat(selectedChat.id);
         } catch (error) {
-          console.error("Error fetching chat details:", error);
+          throw new Error(error);
         }
       }
     };
@@ -99,7 +99,7 @@ const MessageBody = () => {
         content,
         userId,
       });
-      console.log(response.data);
+  
 
       setChat((prevChat) => ({
         ...prevChat,
@@ -119,13 +119,13 @@ const MessageBody = () => {
       e.target.reset();
       setMessage("");
     } catch (error) {
-      console.error(error);
       setChat((prev) => ({
         ...prev,
         messages: prev.messages.filter(
           (msg) => msg.createdAt !== newMessage.createdAt
         ),
       }));
+     throw new Error(error);
     }
   };
 
