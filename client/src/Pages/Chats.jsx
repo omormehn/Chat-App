@@ -9,10 +9,9 @@ const Chats = () => {
       {/* Container left */}
       <ChatLeft />
       {/* Container right */}
-      <div className="">
-        <ChatRight />
-      </div>
-      <Footer/>
+      <ChatRight />
+      
+      <Footer />
     </div>
   );
 };

@@ -14,7 +14,7 @@ import { TiMediaPlay } from "react-icons/ti";
 
 /* Context Api */
 import ChatContext from "../context/ChatContext";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 import SocketContext from "../context/SocketContext";
 
 

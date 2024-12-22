@@ -6,7 +6,7 @@ import { useMediaQuery } from "react-responsive";
 import ChatContext from "../context/ChatContext";
 import MessageBody from "./MessageBody";
 import { useContext } from "react";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 import SocketContext from "../context/SocketContext";
 
 const ChatRight = () => {

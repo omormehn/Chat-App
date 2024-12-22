@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { api } from "../utils/api";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";

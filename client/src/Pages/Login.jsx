@@ -3,7 +3,7 @@ import { FcGoogle } from "react-icons/fc";
 import { IoLogoApple } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api.js";
-import AuthContext from "../context/authContext.jsx";
+import AuthContext from "../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 import { Input, Typography } from "@material-tailwind/react";
 const Login = () => {

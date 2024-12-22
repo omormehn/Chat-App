@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import defaultAvatar from "/src/avatar.svg";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
