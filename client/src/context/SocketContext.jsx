@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from 'socket.io-client';
-import AuthContext from "./authContext";
+import AuthContext from "./AuthContext";
+
 
  const SocketContext = createContext();
 
