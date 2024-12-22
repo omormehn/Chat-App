@@ -1,7 +1,7 @@
 
 import { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import AuthContext from "../context/authContext";
+import AuthContext from "../context/AuthContext";
 import { PacmanLoader } from 'react-spinners';
 
 // eslint-disable-next-line react/prop-types
