@@ -28,15 +28,8 @@ app.use("/auth", authRouter);
 app.use("", userRouter);
 
 
-
-
 app.use('/chats', chatRouter);
 app.use("/messages", messageRouter);
-
-
-
-
-
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
