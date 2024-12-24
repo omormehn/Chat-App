@@ -1,6 +1,7 @@
 import prisma from "../prisma/config.js";
 
 const BASE_URL = "https://chat-app-server-pzli.onrender.com";
+// const BASE_URL = "http://localhost:5000";
 
 export const getUsers = async (req, res) => {
   try {

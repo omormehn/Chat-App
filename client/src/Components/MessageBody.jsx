@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-
 import { useContext, useEffect, useRef, useState } from "react";
 import { PuffLoader } from "react-spinners";
 import { api } from "../utils/api";
@@ -230,7 +229,9 @@ const MessageBody = () => {
               placeholder="Enter Chat"
               className="border-black w-[100%] py-3 px-2"
             />
-            <AiOutlineSend size={25} type="submit" className="cursor-pointer" />
+            <button type="submit" className="cursor-pointer">
+              <AiOutlineSend size={25} />
+            </button>
           </form>
           {showPicker && (
             <div className="absolute bottom-12 left-0 z-50">

@@ -9,22 +9,23 @@ import { useContext } from "react";
 import AuthContext from "../context/AuthContext";
 import SocketContext from "../context/SocketContext";
 
+
 const ChatRight = () => {
   const isDesktop = useMediaQuery({ query: "(min-width: 768px)" });
   const { selectedChat, setSelectedChat } = useContext(ChatContext);
   const { user } = useContext(AuthContext);
   const { onlineUsers } = useContext(SocketContext);
 
-const onlineStatus = () => {
-  const isReceiverOnline = null
-   if (onlineUsers && selectedChat) {
-     const isReceiverOnline = onlineUsers.some(
-       (user) => user.userId === selectedChat.receiver.id
-     );
+  const onlineStatus = () => {
+    const isReceiverOnline = null;
+    if (onlineUsers && selectedChat) {
+      const isReceiverOnline = onlineUsers.some(
+        (user) => user.userId === selectedChat.receiver.id
+      );
       return isReceiverOnline;
-   }
+    }
     return isReceiverOnline;
-}
+  };
 
   return (
     selectedChat && (
@@ -35,18 +36,19 @@ const onlineStatus = () => {
               <div>
                 <div className="bg-[#94A3B8] px-6 z-50 top py-3 flex justify-between items-center fixed">
                   <div className="flex flex-row z-50 items-center gap-4 cursor-pointer hover:bg-slate-500 py-2 px-4">
-                    <img src={selectedChat.receiver.avatar}  className="size-12 rounded-full" alt="" />
+                    <img
+                      src={selectedChat.receiver.avatar}
+                      className="size-12 rounded-full"
+                      alt=""
+                    />
                     <div>
                       <h1 className=" text-lg">{selectedChat.receiver.name}</h1>
                       <p>
-                        {onlineStatus
-                          ? "Online"
-                          : new Date(
-                              selectedChat.receiver.lastSeen
-                            ).toLocaleString("en-US", {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            })}
+                        {onlineStatus ? (
+                          "Online"
+                        ) : (
+                          <div>last seen {format(selectedChat.receiver.lastSeen)}</div>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -81,9 +83,7 @@ const onlineStatus = () => {
                       </div>
                       <div>
                         <h1>{selectedChat.receiver.name}</h1>
-                        <p>
-                          {format(user.lastSeen)}
-                        </p>
+                        <p>{format(user.lastSeen)}</p>
                       </div>
                     </div>
                     <div>
