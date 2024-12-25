@@ -56,7 +56,7 @@ const Login = () => {
         navigate("/profile-setup");
       }
     } catch (error) {
-      setError(error.response.data);
+      setError(error.response.data.message || error.response.data[0]);
     } finally {
       setLoading(false);
     }
@@ -64,16 +64,12 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-
     if (!validateForm(formData)) {
       return;
     }
-
     setLoading(true);
-
     const email = formData.get("email");
     const password = formData.get("password");
-
     try {
       const response = await api.post("auth/login", {
         email,

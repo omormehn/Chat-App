@@ -16,14 +16,13 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     const pass = validatePassword(password);
     if (!pass.isValid) {
-      return res.status(400).json({ errors: pass.errors });
+      return res.status(400).json( pass.errors );
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = generateVerificationCode();
     const user = await prisma.user.create({
       data: {
-        name: '',
+        name: "",
         email,
         password: hashedPassword,
         verificationToken: verificationCode,
@@ -33,7 +32,7 @@ export const register = async (req, res) => {
     generateCookie(res, user);
     res.status(200).json({
       message: "Reg successful",
-      ...user
+      ...user,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -115,24 +114,22 @@ export const profileSetup = async (req, res) => {
         id,
       },
     });
-    
-    if(!user) res.status(404).json({message: "User not found"})
+
+    if (!user) res.status(404).json({ message: "User not found" });
     const updateUser = await prisma.user.update({
       where: { id: req.user.id },
       data: {
         name,
         bio,
         avatar,
-      }
+      },
     });
-    res.json(updateUser)
+    res.json(updateUser);
   } catch (error) {
-    res.status(500).json({message: "Internal service error"})
+    res.status(500).json({ message: "Internal service error" });
     throw new Error(error);
   }
 };
-
-
 
 export const validate = (req, res) => {
   res.status(200).json({ message: "Token is valid", user: req.user });
