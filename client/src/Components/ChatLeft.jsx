@@ -91,6 +91,8 @@ const ChatLeft = () => {
       }
     }
   }, [chats]);
+
+
   return (
     <div className="flex flex-col h-screen chat-card md:border-r-8">
       <div className="fixed w-full md:w-[45%] lg:w-[40%] xl:w-[35%]">
@@ -131,7 +133,7 @@ const ChatLeft = () => {
             <PuffLoader size={50} />
           </div>
         ) : (
-          <div>
+          <div className="h-screen">
             {chats.map((chat) => {
               const unreadCount = getUnreadCount(chat);
 
@@ -174,7 +176,7 @@ const ChatLeft = () => {
               );
             })}
             {chats.length < 1 && (
-              <div className=" mt-[70%] text-center">
+              <div className="mt-16  text-center">
                 Add a chat to start a conversation
               </div>
             )}
