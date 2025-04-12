@@ -1,4 +1,10 @@
-/* eslint-disable react/prop-types */
+/**To do
+ * Make last message update immediately, try doing reverse technique in the event
+ * that was used for the new chat on the receiver side.
+ * 
+ * Since the chat is updated on the receiver end using the socket event, the
+ * unread feature does not work for it, so we need a way to handle the unread status. */
+
 import { createContext, useState } from "react";
 
 import { api } from "../utils/api";
@@ -6,6 +12,7 @@ import { api } from "../utils/api";
 
 const ChatContext = createContext();
 
+// eslint-disable-next-line react/prop-types
 export const ChatContextProvider = ({ children }) => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatDetails, setChatDetails] = useState([]);
@@ -55,7 +62,7 @@ export const ChatContextProvider = ({ children }) => {
         lastMessage: content,
       }));
     } catch (error) {
-      console.log('error in update last mesage', error)
+      console.log('error in update last message', error)
     }
   }
 
