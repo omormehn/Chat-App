@@ -2,6 +2,6 @@ import axios from "axios";
 
 
 export const api = axios.create({
-  baseURL: "https://chat-app-server-pzli.onrender.com/",
+  baseURL: "http://localhost:5000/",
   withCredentials: true
 });

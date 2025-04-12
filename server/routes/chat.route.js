@@ -1,5 +1,5 @@
 import express from "express";
-import { addChat, deleteChat, getChat, getChats, readChat } from "../controller/chat.controller.js";
+import { addChat, deleteChat, getChat, getChats, readChat, updateLastMessage } from "../controller/chat.controller.js";
 import { deleteChats } from "../controller/chat.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -12,6 +12,7 @@ router.put("/read-chat/:chatId", verifyToken, readChat);
 router.put("/read-chats", verifyToken, readChat);
 router.delete("/delete-chat/:chatId", verifyToken, deleteChat);
 router.delete("/delete-chat", verifyToken, deleteChats);
+router.post("/updateLastMessage/:chatId", verifyToken, updateLastMessage);
 
 
 

@@ -10,12 +10,12 @@ import { BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineSend } from "react-icons/ai";
 import { IoMdTime } from "react-icons/io";
 import { TiMediaPlay } from "react-icons/ti";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 
 /* Context Api */
 import ChatContext from "../context/ChatContext";
 import AuthContext from "../context/AuthContext";
 import SocketContext from "../context/SocketContext";
-
 
 /* Emoji */
 import Picker from "@emoji-mart/react";
@@ -24,11 +24,15 @@ import data from "@emoji-mart/data";
 /* Hook */
 import useGetChats from "../hooks/useGetChats";
 
+
+
 const MessageBody = () => {
   const [message, setMessage] = useState("");
+  const [hoverMessage, setHoverMessage] = useState(null);
+  const [messageMenu, setMessageMenu] = useState(null);
   const { setChats } = useGetChats();
 
-  const { selectedChat, getChat, chat, setChat, readChat } =
+  const { selectedChat, getChat, chat, setChat, readChat, updateLastMessage } =
     useContext(ChatContext);
   const { socket } = useContext(SocketContext);
 
@@ -45,6 +49,7 @@ const MessageBody = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
+
 
   useEffect(() => {
     const fetchChatDetails = async () => {
@@ -79,18 +84,18 @@ const MessageBody = () => {
     };
 
     try {
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id === newMessage.chatId
+            ? { ...chat, lastMessage: newMessage }
+            : chat
+        )
+      );
+
       setChat((prev) => ({
         ...prev,
         messages: [...prev.messages, newMessage],
       }));
-
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.id === newMessage.chatId
-            ? { ...chat, lastMessage: message }
-            : chat
-        )
-      );
 
       setMessage("");
 
@@ -98,13 +103,20 @@ const MessageBody = () => {
         content,
         userId,
       });
-  
+      const realMessage = response.data;
+
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id === chatId ? { ...chat, lastMessage: realMessage } : chat
+        )
+      );
+      updateLastMessage(chatId, content);
 
       setChat((prevChat) => ({
         ...prevChat,
         messages: prevChat.messages.map((msg) =>
           msg.createdAt === newMessage.createdAt
-            ? { ...response.data, loading: false }
+            ? { ...realMessage, loading: false }
             : msg
         ),
       }));
@@ -113,6 +125,8 @@ const MessageBody = () => {
         data: response.data,
         receiverId: selectedChat.receiver.id,
       });
+
+    ;
 
       await getChat(chatId);
       e.target.reset();
@@ -124,7 +138,7 @@ const MessageBody = () => {
           (msg) => msg.createdAt !== newMessage.createdAt
         ),
       }));
-     throw new Error(error);
+      throw new Error(error);
     }
   };
 
@@ -140,7 +154,7 @@ const MessageBody = () => {
         setChats((prevChats) =>
           prevChats.map((chat) =>
             chat.id === selectedChat.id
-              ? { ...chat, lastMessage: message }
+              ? { ...chat, lastMessage: data.content }
               : chat
           )
         );
@@ -162,6 +176,25 @@ const MessageBody = () => {
     );
   }
 
+  const handleMessageHover = () => {
+    setHoverMessage(null);
+    setMessageMenu(null);
+  };
+
+  // console.log(chat.messages)
+  const handleDelete = async (e, message) => {
+    e.preventDefault;
+    const chatId = chat.chat.id;
+    const messageId = message.id;
+    try {
+      await api.post(`/messages/delete/${chatId}`, {
+        messageId,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <div className="overflow-auto h-screen py-20 z-20">
@@ -175,10 +208,49 @@ const MessageBody = () => {
                     message.senderId === user.id ? "items-end" : "items-start"
                   }`}
                 >
-                  <div className="message-card ">
+                  <div
+                    className="message-card relative"
+                    onMouseLeave={handleMessageHover}
+                    onMouseEnter={() => setHoverMessage(index)}
+                  >
                     <div className="flex flex-col gap-1">
-                      <div>
+                      <div
+                        className={`flex gap-2 items-center justify-between`}
+                      >
                         <p>{message.content}</p>
+                        {hoverMessage === index && (
+                          <HiOutlineDotsVertical
+                            onClick={() => setMessageMenu(index)}
+                            className={`cursor-pointer ${
+                              messageMenu === index ? "hidden" : ""
+                            }`}
+                          />
+                        )}
+
+                        {messageMenu === index && (
+                          <div
+                            className={`absolute rounded-xl top-5 ${
+                              message.senderId === user.id
+                                ? " right-32"
+                                : " left-28"
+                            } `}
+                          >
+                            <ul className="bg-white px-5 py-2">
+                              <li className="cursor-pointer hover:text-blue-gray-900">
+                                Edit
+                              </li>
+                              <li
+                                onClick={(e) => handleDelete(e, message)}
+                                className="cursor-pointer hover:text-blue-gray-900"
+                              >
+                                Delete
+                              </li>
+                              <li className="cursor-pointer hover:text-blue-gray-900">
+                                Forward
+                              </li>
+                            </ul>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-4 justify-between">
                         <small className="message-time">

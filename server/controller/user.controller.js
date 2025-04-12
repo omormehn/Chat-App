@@ -1,7 +1,7 @@
 import prisma from "../prisma/config.js";
 
-const BASE_URL = "https://chat-app-server-pzli.onrender.com";
-// const BASE_URL = "http://localhost:5000";
+// const BASE_URL = "https://chat-app-server-pzli.onrender.com";
+const BASE_URL = "http://localhost:5000";
 
 export const getUsers = async (req, res) => {
   try {
@@ -53,22 +53,6 @@ export const updateProfile = async (req, res) => {
       .json({ message: "User updated Successfully", user, fileUrl });
   } catch (error) {
     res.status(500).json({ message: "Internal service error", error });
-    throw new Error(error);
-  }
-};
-export const avatarSetup = async (req, res) => {
-  const { id } = req.user.id;
-  const { avatar } = req.body;
-
-  try {
-    if (!req.file)
-      return res.status(400).json({ message: "File is  required" });
-    const date = Date.now();
-
-    let fileName = "uploads/profile";
-    res.json(updateUser);
-  } catch (error) {
-    res.status(500).json({ message: "Internal service error" });
     throw new Error(error);
   }
 };

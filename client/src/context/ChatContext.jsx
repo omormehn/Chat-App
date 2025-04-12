@@ -41,6 +41,24 @@ export const ChatContextProvider = ({ children }) => {
     }
   };
 
+  const updateLastMessage = async (chatId, content) => {
+    try {
+      await api.post(`chats/updateLastMessage/${chatId}`, {
+        content
+      });
+      setChat((prev) => ({
+        ...prev,
+        lastMessage: content,
+      }));
+      setChatDetails((prev) => ({
+        ...prev,
+        lastMessage: content,
+      }));
+    } catch (error) {
+      console.log('error in update last mesage', error)
+    }
+  }
+
   return (
     <ChatContext.Provider
       value={{
@@ -55,6 +73,7 @@ export const ChatContextProvider = ({ children }) => {
         setSelectedChatId,
         chat,
         setChat,
+        updateLastMessage,
       }}
     >
       {children}

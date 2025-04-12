@@ -12,7 +12,7 @@ export const SocketContextProvider = ({children}) => {
     const { user } = useContext(AuthContext);
 
     useEffect(() => {
-        const newSocket = io("https://chat-app-42yc.onrender.com");
+        const newSocket = io("http://localhost:3001");
 
         newSocket.on("onlineUsers", (users) => {
             setOnlineUsers(users)

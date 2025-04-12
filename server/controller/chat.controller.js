@@ -45,7 +45,7 @@ export const getChat = async (req, res) => {
       },
     });
 
-    if (!chat) return req.status(404).json({ message: "Chat not found" });
+    if (!chat) return res.status(404).json({ message: "Chat not found" });
     res.status(200).json({ chat });
   } catch (error) {
     res.status(501).json({ message: "Internal server error", error });
@@ -71,10 +71,23 @@ export const addChat = async (req, res) => {
       return res.status(409).json({ message: "Chat already exists with user" });
     const chat = await prisma.chat.create({
       data: {
-        userIds: [id, receiverId],
+        userIds: {
+          set: [id, receiverId],
+        },
       },
     });
-    res.status(200).json(chat);
+
+    const receiver = await prisma.user.findFirst({
+      where: { id: receiverId },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        lastSeen: true,
+      },
+    });
+
+    res.status(201).json({ ...chat, receiver });
   } catch (error) {
     res.status(501).json({ message: "Internal server error", error });
     throw new Error(error);
@@ -100,6 +113,7 @@ export const readChat = async (req, res) => {
     });
     res.json(chat);
   } catch (error) {
+    console.log(error);
     res.status(501).json({ message: "Internal Server Error" });
     throw new Error(error);
   }
@@ -158,5 +172,32 @@ export const deleteChat = async (req, res) => {
   } catch (error) {
     res.status(501).json({ message: "Internal Server Error" });
     throw new Error(error);
+  }
+};
+
+export const updateLastMessage = async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.user.id;
+  const { content } = req.body;
+
+  try {
+    await prisma.chat.update({
+      where: {
+        id: chatId,
+        userIds: {
+          hasSome: [userId],
+        },
+      },
+      data: {
+        lastMessage: content,
+      },
+      select: {
+        lastMessage: true,
+      },
+    });
+
+
+  } catch (error) {
+    console.log("error in update", error);
   }
 };

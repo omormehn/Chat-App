@@ -68,6 +68,7 @@ const Login = () => {
       return;
     }
     setLoading(true);
+    setError("");
     const email = formData.get("email");
     const password = formData.get("password");
     try {
@@ -83,6 +84,7 @@ const Login = () => {
       }
     } catch (error) {
       setError(error.response ? error.response.data.message : error.message);
+      console.log(error)
     } finally {
       setLoading(false);
     }

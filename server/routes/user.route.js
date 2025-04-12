@@ -3,7 +3,6 @@ import {
   getUser,
   getUsers,
   updateProfile,
-  avatarSetup,
   removeAvatar,
 } from "../controller/user.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";

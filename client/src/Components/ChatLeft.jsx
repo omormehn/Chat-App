@@ -13,11 +13,10 @@ import useGetUsers from "../hooks/useGetUsers";
 import { api } from "../utils/api";
 import toast from "react-hot-toast";
 
-
 const ChatLeft = () => {
   const navigate = useNavigate();
   const [read, setRead] = useState(false);
-  
+
   const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
     useContext(ChatContext);
   const { user } = useContext(AuthContext);
@@ -27,6 +26,18 @@ const ChatLeft = () => {
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("newChat", (chat) => {
+      setChats((prev) => [...prev, chat]);
+    });
+
+    return () => {
+      socket.off("newChat");
+    };
+  }, [socket, setChats]);
 
   const filteredUsers = users.filter((currentUser) => {
     return (
@@ -55,13 +66,26 @@ const ChatLeft = () => {
     const receiverId = receiver.id;
     try {
       setOpen(false);
-      await api.post("chats/add-chat", {
+      const res = await api.post("chats/add-chat", {
         receiverId,
       });
 
-      await getChats();
+      const newChat = res.data;
+
+      setChats((prev) => [...prev, newChat]);
+      socket.emit("createChat", { chat: newChat, receiverId });
+
+      const newChats = await getChats();
+      const chat = newChats.find((chat) => chat.userIds.includes(receiverId));
+
+      if (chat) {
+        handleChatClick(chat);
+      } else {
+        toast.error("Chat not found");
+      }
     } catch (error) {
       toast.error("Failed to add chat");
+      console.log(error);
       throw new Error(error);
     }
   };
@@ -91,7 +115,6 @@ const ChatLeft = () => {
       }
     }
   }, [chats]);
-
 
   return (
     <div className="flex flex-col h-screen chat-card md:border-r-8">
@@ -148,13 +171,13 @@ const ChatLeft = () => {
                   <div className="flex gap-4">
                     {/* Profile Picture */}
                     <img
-                      src={chat.receiver.avatar ? chat.receiver.avatar : defaultAvatar}
+                      src={chat.receiver?.avatar || defaultAvatar}
                       className="size-12 rounded-full"
                     ></img>
                     {/* Chat Info */}
                     <div className="">
                       <h1 className="font-bold text-lg">
-                        {chat.receiver.name}
+                        {chat.receiver?.name}
                       </h1>
                       <div className="w-44 overflow-hidden  ">
                         <p className="font-light  truncate ">

@@ -37,12 +37,29 @@ io.on("connection", (socket) => {
     io.emit("onlineUsers", onlineUser);
   });
 
+  // create a 'sendMessage' event to send a message to a specific user
   socket.on("sendMessage", ({data, receiverId}) => {
     const receiver = getUser(receiverId);
+    // we are emitting a 'receiveMessage' event to notify the receiver that a message was sent
     if (receiver) {
       io.to(receiver.socketId).emit("receiveMessage", data)
     }
+  })
 
+  socket.on("createChat", ({chat, receiverId}) => {
+    // find the receiver 
+    const receiver = getUser(receiverId);
+
+    if(receiver) {
+      io.to(receiver.socketId).emit("newChat", chat);
+    }
+  });
+
+  socket.on("updateLastMessage", ({chatId, receiverId, lastMessage}) => {
+    const receiver = getUser(receiverId);
+    if(receiver) {
+      io.to(receiver.socketId).emit("updateMessage", {chatId, lastMessage});
+    }
   })
 
   socket.on("disconnect", () => {

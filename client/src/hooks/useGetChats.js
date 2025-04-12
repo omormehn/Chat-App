@@ -15,6 +15,7 @@ const useGetChats = () => {
     try {
       const response = await api.get("chats/get-chats");
       setChats(response.data.chats);
+      return response.data.chats;
     } catch (error) {
       setError(error);
       throw new Error(error);

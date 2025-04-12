@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/add/:chatId', verifyToken, addMessage);
 router.put("/edit/:chatId", verifyToken, editMessage);
-router.delete("/:chatId", verifyToken, deleteMessage);
+router.post("/delete/:chatId", verifyToken, deleteMessage);
 
 
 export default router;
