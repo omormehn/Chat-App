@@ -12,6 +12,7 @@ const io = new Server({
 });
 
 let onlineUser = [];
+let users = [];
 
 const addUser = (userId, socketId) => {
   const userExits = onlineUser.find((user) => user.userId === userId);
@@ -55,10 +56,10 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("updateLastMessage", ({chatId, receiverId, lastMessage}) => {
-    const receiver = getUser(receiverId);
-    if(receiver) {
-      io.to(receiver.socketId).emit("updateMessage", {chatId, lastMessage});
+  socket.on("updateLastMessage", ({chat, userId}) => {
+    const sender = getUser(userId);
+    if(sender) {
+      io.to(sender.socketId).emit("updateMessage", chat);
     }
   })
 

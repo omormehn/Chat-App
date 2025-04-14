@@ -17,7 +17,7 @@ const ChatLeft = () => {
   const navigate = useNavigate();
   const [read, setRead] = useState(false);
 
-  const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
+  const { selectedChat, setSelectedChat, getChat, chat, setSelectedChatId } =
     useContext(ChatContext);
   const { user } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
@@ -27,6 +27,9 @@ const ChatLeft = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
 
+
+
+
   useEffect(() => {
     if (!socket) return;
 
@@ -34,10 +37,18 @@ const ChatLeft = () => {
       setChats((prev) => [...prev, chat]);
     });
 
+    socket.on("updateMessage", (updatedChat) => {
+      setChats((prev) =>
+        prev.map((chat) => 
+          chat.id === updatedChat.id ? {...chat, lastMessage: updatedChat.lastMessage.content} : chat
+        ))
+    });
+
     return () => {
-      socket.off("newChat");
+      socket.off("newChat")
+      socket.off("updateMessage");
     };
-  }, [socket, setChats]);
+  }, [socket, setChats, chat]);
 
   const filteredUsers = users.filter((currentUser) => {
     return (

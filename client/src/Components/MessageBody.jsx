@@ -24,15 +24,13 @@ import data from "@emoji-mart/data";
 /* Hook */
 import useGetChats from "../hooks/useGetChats";
 
-
-
 const MessageBody = () => {
   const [message, setMessage] = useState("");
   const [hoverMessage, setHoverMessage] = useState(null);
   const [messageMenu, setMessageMenu] = useState(null);
-  const { setChats } = useGetChats();
+  const { setChats, } = useGetChats();
 
-  const { selectedChat, getChat, chat, setChat, readChat, updateLastMessage } =
+  const { selectedChat, getChat, chat, setChat, readChat } =
     useContext(ChatContext);
   const { socket } = useContext(SocketContext);
 
@@ -47,9 +45,34 @@ const MessageBody = () => {
   };
 
   useEffect(() => {
+    if (socket) {
+      const receiveMessage = (data) => {
+        if (chat && chat.chat.id === data.chatId) {
+          setChat((prev) => ({
+            ...prev,
+            messages: [...prev.messages, data],
+          }));
+        }
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.id === selectedChat.id
+              ? { ...chat, lastMessage: data.content }
+              : chat
+          )
+        );
+      };
+
+      socket.on("receiveMessage", receiveMessage);
+
+      return () => {
+        socket.off("receiveMessage", receiveMessage);
+      };
+    }
+  }, [chat, socket]);
+
+  useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
-
 
   useEffect(() => {
     const fetchChatDetails = async () => {
@@ -87,7 +110,7 @@ const MessageBody = () => {
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.id === newMessage.chatId
-            ? { ...chat, lastMessage: newMessage }
+          ? { ...chat, lastMessage: newMessage }
             : chat
         )
       );
@@ -99,19 +122,12 @@ const MessageBody = () => {
 
       setMessage("");
 
+
       const response = await api.post(`/messages/add/${chatId}`, {
         content,
         userId,
       });
       const realMessage = response.data;
-
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.id === chatId ? { ...chat, lastMessage: realMessage } : chat
-        )
-      );
-      updateLastMessage(chatId, content);
-
       setChat((prevChat) => ({
         ...prevChat,
         messages: prevChat.messages.map((msg) =>
@@ -121,16 +137,19 @@ const MessageBody = () => {
         ),
       }));
 
+      socket.emit("updateLastMessage", {
+        chat: {id: chatId, lastMessage: realMessage},
+        userId,
+      });
+
       socket.emit("sendMessage", {
         data: response.data,
         receiverId: selectedChat.receiver.id,
       });
 
-    ;
-
-      await getChat(chatId);
+      await getChat(chatId);   
       e.target.reset();
-      setMessage("");
+
     } catch (error) {
       setChat((prev) => ({
         ...prev,
@@ -142,31 +161,9 @@ const MessageBody = () => {
     }
   };
 
-  useEffect(() => {
-    if (socket) {
-      const receiveMessage = (data) => {
-        if (chat && chat.chat.id === data.chatId) {
-          setChat((prev) => ({
-            ...prev,
-            messages: [...prev.messages, data],
-          }));
-        }
-        setChats((prevChats) =>
-          prevChats.map((chat) =>
-            chat.id === selectedChat.id
-              ? { ...chat, lastMessage: data.content }
-              : chat
-          )
-        );
-      };
 
-      socket.on("receiveMessage", receiveMessage);
 
-      return () => {
-        socket.off("receiveMessage", receiveMessage);
-      };
-    }
-  }, [chat, socket]);
+
 
   if (!chat) {
     return (
