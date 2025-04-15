@@ -28,7 +28,7 @@ const MessageBody = () => {
   const [message, setMessage] = useState("");
   const [hoverMessage, setHoverMessage] = useState(null);
   const [messageMenu, setMessageMenu] = useState(null);
-  const { setChats, } = useGetChats();
+  const { setChats, getChats } = useGetChats();
 
   const { selectedChat, getChat, chat, setChat, readChat } =
     useContext(ChatContext);
@@ -54,12 +54,13 @@ const MessageBody = () => {
           }));
         }
         setChats((prevChats) =>
-          prevChats.map((chat) =>
-            chat.id === selectedChat.id
+          prevChats.map((chat) => {
+            return chat.id === selectedChat.id
               ? { ...chat, lastMessage: data.content }
-              : chat
-          )
+              : chat;
+          })
         );
+     
       };
 
       socket.on("receiveMessage", receiveMessage);
@@ -110,7 +111,7 @@ const MessageBody = () => {
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.id === newMessage.chatId
-          ? { ...chat, lastMessage: newMessage }
+            ? { ...chat, lastMessage: newMessage }
             : chat
         )
       );
@@ -121,7 +122,6 @@ const MessageBody = () => {
       }));
 
       setMessage("");
-
 
       const response = await api.post(`/messages/add/${chatId}`, {
         content,
@@ -138,7 +138,7 @@ const MessageBody = () => {
       }));
 
       socket.emit("updateLastMessage", {
-        chat: {id: chatId, lastMessage: realMessage},
+        chat: { id: chatId, lastMessage: realMessage },
         userId,
       });
 
@@ -147,9 +147,8 @@ const MessageBody = () => {
         receiverId: selectedChat.receiver.id,
       });
 
-      await getChat(chatId);   
+      await getChat(chatId);
       e.target.reset();
-
     } catch (error) {
       setChat((prev) => ({
         ...prev,
@@ -161,10 +160,6 @@ const MessageBody = () => {
     }
   };
 
-
-
-
-
   if (!chat) {
     return (
       <div className="h-screen flexCenter">
@@ -172,6 +167,8 @@ const MessageBody = () => {
       </div>
     );
   }
+
+  // console.log(chat, "chat");
 
   const handleMessageHover = () => {
     setHoverMessage(null);
@@ -184,9 +181,33 @@ const MessageBody = () => {
     const chatId = chat.chat.id;
     const messageId = message.id;
     try {
-      await api.post(`/messages/delete/${chatId}`, {
+      setChat((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((msg) => msg.id !== messageId),
+      }));
+
+      
+      const res = await api.post(`/messages/delete/${chatId}`, {
         messageId,
       });
+      console.log(res.data.lastMessage, "delete message response");
+
+      setChats((prev) => {
+        return prev.map((chat) => {
+          if (chat.id === chatId) {
+            console.log(chat, "chat in delete message");
+            console.log(messageId, "message id in delete message");
+            console.log(chat.lastMessage, "chat last message in delete message");
+            return {
+              ...chat,
+              lastMessage: res.data.lastMessage
+            };
+          }
+          return chat;
+        });
+      })
+
+      await getChats();
     } catch (error) {
       console.log(error);
     }
@@ -215,7 +236,8 @@ const MessageBody = () => {
                         className={`flex gap-2 items-center justify-between`}
                       >
                         <p>{message.content}</p>
-                        {hoverMessage === index && (
+
+                        {message.senderId === user.id && hoverMessage === index && (
                           <HiOutlineDotsVertical
                             onClick={() => setMessageMenu(index)}
                             className={`cursor-pointer ${

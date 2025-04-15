@@ -1,6 +1,6 @@
 /**To do
  * Make last message update immediately, try doing reverse technique in the event
- * that was used for the new chat on the receiver side.
+ * that was used for the new chat on the receiver side. ✅
  * 
  * Since the chat is updated on the receiver end using the socket event, the
  * unread feature does not work for it, so we need a way to handle the unread status. */

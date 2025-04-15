@@ -36,7 +36,7 @@ export const addMessage = async (req, res) => {
 export const deleteMessage = async (req, res) => {
   const { chatId } = req.params;
   const { messageId } = req.body;
-  console.log(messageId)
+
   try {
     const chat = await prisma.chat.findUnique({
       where: {
@@ -48,12 +48,12 @@ export const deleteMessage = async (req, res) => {
     });
     if (!chat) return res.status(404).json({ message: "Chat not found" });
     const message = chat.messages.find((message) => message.id === messageId);
-    if (!message) return res.status(404).json({ message: "Message Not found" });       
- 
-     await prisma.message.delete({
+    if (!message) return res.status(404).json({ message: "Message Not found" });
+
+    await prisma.message.delete({
       where: { id: messageId },
     });
-    res.status(200).json({ message: "Message deleted successfully" });
+    // res.status(200).json({ message: "Message deleted successfully" });
 
     const remainingMessages = await prisma.message.findMany({
       where: { chatId: chatId },
@@ -62,8 +62,9 @@ export const deleteMessage = async (req, res) => {
       },
       take: 1,
     });
+    // if (!remainingMessages) return res.status(404).json({ message: "No messages found" });
 
-    if (remainingMessages > 0) {
+    if (remainingMessages.length > 0) {
       await prisma.chat.update({
         where: { id: chatId },
         data: {
@@ -72,13 +73,19 @@ export const deleteMessage = async (req, res) => {
       });
     }
 
+    res
+      .status(200)
+      .json({
+        message: "Message deleted successfully",
+        lastMessage: remainingMessages[0].content,
+      });
+
     await prisma.chat.update({
       where: { id: chatId },
       data: {
         lastMessage: null,
       },
     });
-
   } catch (error) {
     console.error(error);
     res.status(501).json({ message: "Error in deleting message" });
