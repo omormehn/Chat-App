@@ -6,7 +6,6 @@ import { api } from "../utils/api.js";
 import AuthContext from "../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 import { Typography } from "@material-tailwind/react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import InputComponent from "../Components/InputComponent.jsx";
 
 const Login = () => {
