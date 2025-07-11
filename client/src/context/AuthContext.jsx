@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
 import toast from "react-hot-toast";
 
-
 const AuthContext = createContext();
 
 // eslint-disable-next-line react/prop-types
@@ -25,13 +24,13 @@ export const AuthContextProvider = ({ children }) => {
         withCredentials: true,
       });
       setUser(userResponse.data);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       navigate("/login");
       setUser(null);
       localStorage.removeItem("user");
       toast.error("Session expired. Please log in again.");
-      } finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -42,7 +41,7 @@ export const AuthContextProvider = ({ children }) => {
 
   useEffect(() => {
     validateToken();
-  }, [user, setUser]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, updateUser, loading }}>
