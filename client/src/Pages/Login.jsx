@@ -106,10 +106,10 @@ const Login = () => {
   return (
     <div className="bg-[#343252] overflow-hidden bg-gradient-to-r ">
       {/* position */}
-      <div className="flexCenter md:pt-5 overflow-hidden  ">
+      <div className="flexCenter  md:pt-5 overflow-hidden  ">
         {/* card */}
         <div
-          className={`flex w-[700px] overflow-hidden min-h-screen max-w-full md:rounded-2xl ${
+          className={`flex items-center justify-center w-[700px] overflow-hidden min-h-dvh max-w-full md:rounded-2xl ${
             showReg ? "flex-row-reverse" : ""
           } bg-slate-800  card`}
         >
