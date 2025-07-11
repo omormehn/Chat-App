@@ -12,7 +12,7 @@ export const SocketContextProvider = ({children}) => {
     const { user } = useContext(AuthContext);
 
     useEffect(() => {
-        const newSocket = io("http://localhost:3001");
+        const newSocket = io(import.meta.env.VITE_API_BASE_URL);
 
         newSocket.on("onlineUsers", (users) => {
             setOnlineUsers(users)
