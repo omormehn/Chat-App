@@ -23,6 +23,7 @@ import data from "@emoji-mart/data";
 
 /* Hook */
 import useGetChats from "../hooks/useGetChats";
+import { useSocketEvents } from "../hooks/useSocketEvents";
 
 const MessageBody = () => {
   const [message, setMessage] = useState("");
@@ -44,32 +45,25 @@ const MessageBody = () => {
     setMessage((prevMessage) => prevMessage + emoji.native);
   };
 
-  useEffect(() => {
-    if (socket) {
-      const receiveMessage = (data) => {
-        if (chat && chat.chat.id === data.chatId) {
-          setChat((prev) => ({
-            ...prev,
-            messages: [...prev.messages, data],
-          }));
-        }
-        setChats((prevChats) =>
-          prevChats.map((chat) => {
-            return chat.id === selectedChat.id
-              ? { ...chat, lastMessage: data.content }
-              : chat;
-          })
-        );
-     
-      };
+  useSocketEvents(socket, {
+    onReceiveMessage: (data) => {
+      if (chat && chat.chat.id === data.chatId) {
+        setChat((prev) => ({
+          ...prev,
+          messages: [...prev.messages, data],
+        }));
+      }
+      setChats((prevChats) =>
+        prevChats.map((chat) => {
+          return chat.id === selectedChat.id
+            ? { ...chat, lastMessage: data.content }
+            : chat;
+        })
+      );
+    },
 
-      socket.on("receiveMessage", receiveMessage);
-
-      return () => {
-        socket.off("receiveMessage", receiveMessage);
-      };
-    }
-  }, [chat, socket]);
+   
+  });
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -186,7 +180,6 @@ const MessageBody = () => {
         messages: prev.messages.filter((msg) => msg.id !== messageId),
       }));
 
-      
       const res = await api.post(`/messages/delete/${chatId}`, {
         messageId,
       });
@@ -197,15 +190,18 @@ const MessageBody = () => {
           if (chat.id === chatId) {
             console.log(chat, "chat in delete message");
             console.log(messageId, "message id in delete message");
-            console.log(chat.lastMessage, "chat last message in delete message");
+            console.log(
+              chat.lastMessage,
+              "chat last message in delete message"
+            );
             return {
               ...chat,
-              lastMessage: res.data.lastMessage
+              lastMessage: res.data.lastMessage,
             };
           }
           return chat;
         });
-      })
+      });
 
       await getChats();
     } catch (error) {
@@ -237,14 +233,15 @@ const MessageBody = () => {
                       >
                         <p>{message.content}</p>
 
-                        {message.senderId === user.id && hoverMessage === index && (
-                          <HiOutlineDotsVertical
-                            onClick={() => setMessageMenu(index)}
-                            className={`cursor-pointer ${
-                              messageMenu === index ? "hidden" : ""
-                            }`}
-                          />
-                        )}
+                        {message.senderId === user.id &&
+                          hoverMessage === index && (
+                            <HiOutlineDotsVertical
+                              onClick={() => setMessageMenu(index)}
+                              className={`cursor-pointer ${
+                                messageMenu === index ? "hidden" : ""
+                              }`}
+                            />
+                          )}
 
                         {messageMenu === index && (
                           <div

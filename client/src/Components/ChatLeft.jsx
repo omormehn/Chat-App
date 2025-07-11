@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { PuffLoader } from "react-spinners";
 import defaultAvatar from "/src/avatar.svg";
 import AuthContext from "../context/AuthContext";
@@ -12,12 +12,11 @@ import { Card, Typography, CardBody, Dialog } from "@material-tailwind/react";
 import useGetUsers from "../hooks/useGetUsers";
 import { api } from "../utils/api";
 import toast from "react-hot-toast";
+import { useSocketEvents } from "../hooks/useSocketEvents";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
-  const [read, setRead] = useState(false);
-
-  const { selectedChat, setSelectedChat, getChat, chat, setSelectedChatId } =
+  const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
     useContext(ChatContext);
   const { user } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
@@ -27,28 +26,55 @@ const ChatLeft = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
 
+  useSocketEvents(socket, {
+    onReceiveMessage: (data) => {
+      try {
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.id === data.chatId) {
+              const isChatOpen = selectedChat?.id === data.chatId;
+              const updatedSeenBy = isChatOpen
+                ? [...new Set([...chat.seenBy, user.id])]
+                : chat.seenBy;
+              console.log("sj", getUnreadCount(chat));
+              console.log("sjkk", isChatOpen);
+              console.log("sjkjjk", chat.seenBy.length);
 
+              return {
+                ...chat,
+                lastMessage: data.content,
+                seenBy: updatedSeenBy,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return chat;
+          })
+        );
+      } catch (error) {
+        throw new error();
+      }
+    },
 
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("newChat", (chat) => {
+    onNewChat: (chat) => {
       setChats((prev) => [...prev, chat]);
-    });
+    },
 
-    socket.on("updateMessage", (updatedChat) => {
+    onUpdateMessage: (updatedChat) => {
       setChats((prev) =>
-        prev.map((chat) => 
-          chat.id === updatedChat.id ? {...chat, lastMessage: updatedChat.lastMessage.content} : chat
-        ))
-    });
+        prev.map((chat) =>
+          chat.id === updatedChat.id
+            ? { ...chat, lastMessage: updatedChat.lastMessage.content }
+            : chat
+        )
+      );
+    },
+  });
 
-    return () => {
-      socket.off("newChat")
-      socket.off("updateMessage");
-    };
-  }, [socket, setChats, chat]);
+  const sortedChats = [...chats].sort(
+    (a, b) =>
+      new Date(b.updatedAt || b.createdAt) -
+      new Date(a.updatedAt || a.createdAt)
+  );
 
   const filteredUsers = users.filter((currentUser) => {
     return (
@@ -62,6 +88,7 @@ const ChatLeft = () => {
     if (chat.id === selectedChat?.id) {
       return;
     }
+    console.log(getUnreadCount(chat), "sen");
 
     chat.seenBy = [...chat.seenBy, user.id];
 
@@ -71,6 +98,7 @@ const ChatLeft = () => {
   };
 
   const getUnreadCount = (chat) => {
+    if (selectedChat?.id === chat.id) return 0;
     return chat.seenBy.includes(user.id) ? 0 : 1;
   };
   const addChat = async (receiver) => {
@@ -100,32 +128,6 @@ const ChatLeft = () => {
       throw new Error(error);
     }
   };
-
-  useEffect(() => {
-    if (socket) {
-      try {
-        const receiveMessage = (data) => {
-          setRead(true);
-          setChats((prevChats) =>
-            prevChats.map((chat) =>
-              chat.id === data.chatId
-                ? { ...chat, lastMessage: data.content }
-                : chat
-            )
-          );
-        };
-        socket.on("receiveMessage", receiveMessage);
-        return () => {
-          socket.off("receiveMessage", receiveMessage);
-          setRead(false);
-        };
-      } catch (error) {
-        throw new error();
-      } finally {
-        setRead(false);
-      }
-    }
-  }, [chats]);
 
   return (
     <div className="flex flex-col h-screen chat-card md:border-r-8">
@@ -168,9 +170,7 @@ const ChatLeft = () => {
           </div>
         ) : (
           <div className="h-screen">
-            {chats.map((chat) => {
-              const unreadCount = getUnreadCount(chat);
-
+            {sortedChats.map((chat) => {
               return (
                 <div
                   key={chat.id}
@@ -198,12 +198,20 @@ const ChatLeft = () => {
                     </div>
                   </div>
                   {/* Time and count */}
-                  <div className="flex flex-col pr-2 items-end">
+                  <div
+                    key={chat.id}
+                    className={`w-full py-5 px-2 rounded-md flex flex-row justify-between hover:bg-slate-300 ${
+                      getUnreadCount(chat) > 0 ? "bg-blue-50" : ""
+                    }`}
+                    onClick={() => {
+                      handleChatClick(chat);
+                    }}
+                  >
                     {/* <p className="font-light text-end">2:00 PM</p> */}
-                    {unreadCount > 0 || read ? (
-                      <div className="bg-red-500 text-white text-xs px-2 py-2 rounded-full"></div>
-                    ) : (
-                      <div className=""></div>
+                    {getUnreadCount(chat) > 0 && (
+                      <div className="bg-red-500 text-white text-xs flex items-center justify-center h-5 w-5 rounded-full">
+                        {getUnreadCount(chat)}
+                      </div>
                     )}
                   </div>
                 </div>
