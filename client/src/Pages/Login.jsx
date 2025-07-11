@@ -106,10 +106,10 @@ const Login = () => {
   return (
     <div className="bg-[#343252] overflow-hidden bg-gradient-to-r ">
       {/* position */}
-      <div className="flexCenter pt-5 overflow-hidden  ">
+      <div className="flexCenter md:pt-5 overflow-hidden  ">
         {/* card */}
         <div
-          className={`flex w-[700px] overflow-hidden min-h-screen max-w-full rounded-2xl ${
+          className={`flex w-[700px] overflow-hidden min-h-screen max-w-full md:rounded-2xl ${
             showReg ? "flex-row-reverse" : ""
           } bg-slate-800  card`}
         >
@@ -212,7 +212,7 @@ const Login = () => {
                 </div>
 
                 {/* have an account */}
-                <div className={`flex flex-col sm:flex-row gap-2 text-white text-slate-300 text-sm`}>
+                <div className={`flex flex-row gap-2 text-white text-slate-300 text-sm`}>
                   {showReg ? (
                     <p className="">Have have an account? </p>
                   ) : (
