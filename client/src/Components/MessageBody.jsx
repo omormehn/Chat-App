@@ -56,13 +56,11 @@ const MessageBody = () => {
       setChats((prevChats) =>
         prevChats.map((chat) => {
           return chat.id === selectedChat.id
-            ? { ...chat, lastMessage: data.content }
+            ? { ...chat, lastMessage: data }
             : chat;
         })
       );
     },
-
-   
   });
 
   useEffect(() => {
@@ -121,6 +119,7 @@ const MessageBody = () => {
         content,
         userId,
       });
+
       const realMessage = response.data;
       setChat((prevChat) => ({
         ...prevChat,
@@ -132,8 +131,12 @@ const MessageBody = () => {
       }));
 
       socket.emit("updateLastMessage", {
-        chat: { id: chatId, lastMessage: realMessage },
-        userId,
+        chat: {
+          id: chatId,
+          userIds: [userId, selectedChat.receiver.id],
+          lastMessage: realMessage,
+        },
+        userId
       });
 
       socket.emit("sendMessage", {
@@ -150,6 +153,7 @@ const MessageBody = () => {
           (msg) => msg.createdAt !== newMessage.createdAt
         ),
       }));
+      console.log("error", error);
       throw new Error(error);
     }
   };
@@ -169,7 +173,6 @@ const MessageBody = () => {
     setMessageMenu(null);
   };
 
-  // console.log(chat.messages)
   const handleDelete = async (e, message) => {
     e.preventDefault;
     const chatId = chat.chat.id;

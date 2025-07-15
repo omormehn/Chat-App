@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
@@ -13,6 +14,7 @@ import useGetUsers from "../hooks/useGetUsers";
 import { api } from "../utils/api";
 import toast from "react-hot-toast";
 import { useSocketEvents } from "../hooks/useSocketEvents";
+import { format } from "timeago.js";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
@@ -36,13 +38,10 @@ const ChatLeft = () => {
               const updatedSeenBy = isChatOpen
                 ? [...new Set([...chat.seenBy, user.id])]
                 : chat.seenBy;
-              console.log("sj", getUnreadCount(chat));
-              console.log("sjkk", isChatOpen);
-              console.log("sjkjjk", chat.seenBy.length);
 
               return {
                 ...chat,
-                lastMessage: data.content,
+                lastMessage: data,
                 seenBy: updatedSeenBy,
                 updatedAt: new Date().toISOString(),
               };
@@ -60,13 +59,19 @@ const ChatLeft = () => {
     },
 
     onUpdateMessage: (updatedChat) => {
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat.id === updatedChat.id
-            ? { ...chat, lastMessage: updatedChat.lastMessage.content }
+      console.log("skk", updatedChat);
+
+      const updateChats = (prevChat, newChat, userId) => {
+        const isChat = newChat.userIds.includes(userId);
+        if (!isChat) return prevChat;
+
+        return prevChat.map((chat) =>
+          chat.id === newChat.id
+            ? { ...chat, lastMessage: newChat.lastMessage }
             : chat
-        )
-      );
+        );
+      };
+      setChats((prevChats) => updateChats(prevChats, updatedChat, user.id));
     },
   });
 
@@ -171,6 +176,7 @@ const ChatLeft = () => {
         ) : (
           <div className="h-screen">
             {sortedChats.map((chat) => {
+              console.log("chh", chat);
               return (
                 <div
                   key={chat.id}
@@ -192,7 +198,7 @@ const ChatLeft = () => {
                       </h1>
                       <div className="w-44 overflow-hidden  ">
                         <p className="font-light  truncate ">
-                          {chat.lastMessage}
+                          {chat.lastMessage?.content}
                         </p>
                       </div>
                     </div>
@@ -200,14 +206,14 @@ const ChatLeft = () => {
                   {/* Time and count */}
                   <div
                     key={chat.id}
-                    className={`w-full py-5 px-2 rounded-md flex flex-row justify-between hover:bg-slate-300 ${
-                      getUnreadCount(chat) > 0 ? "bg-blue-50" : ""
-                    }`}
+                    className={` rounded-md flex flex-col items-center justify-end`}
                     onClick={() => {
                       handleChatClick(chat);
                     }}
                   >
-                    {/* <p className="font-light text-end">2:00 PM</p> */}
+                    <div>
+                      <p>{format(chat.lastMessage?.createdAt)}</p>
+                    </div>
                     {getUnreadCount(chat) > 0 && (
                       <div className="bg-red-500 text-white text-xs flex items-center justify-center h-5 w-5 rounded-full">
                         {getUnreadCount(chat)}

@@ -1,9 +1,13 @@
 import prisma from "../prisma/config.js";
+import { generateRand } from "../utils/generateVerifCode.js";
 export const getChats = async (req, res) => {
   const userId = req.user.id;
   try {
     const chats = await prisma.chat.findMany({
       where: { userIds: { hasSome: [userId] } },
+      include: {
+        lastMessage: true
+      }
     });
 
     for (const chat of chats) {
@@ -42,6 +46,7 @@ export const getChat = async (req, res) => {
             createdAt: "asc",
           },
         },
+        lastMessage: true,
       },
     });
 
@@ -53,9 +58,11 @@ export const getChat = async (req, res) => {
   }
 };
 
+
 export const addChat = async (req, res) => {
   const { id } = req.user;
   const { receiverId } = req.body;
+  const lastMsgId = generateRand()
   if (!id || !receiverId) {
     return res.status(400).json({ message: "Missing required parameters" });
   }
@@ -67,6 +74,7 @@ export const addChat = async (req, res) => {
         },
       },
     });
+    console.log(lastMsgId)
     if (existingChat)
       return res.status(409).json({ message: "Chat already exists with user" });
     const chat = await prisma.chat.create({
@@ -195,8 +203,6 @@ export const updateLastMessage = async (req, res) => {
         lastMessage: true,
       },
     });
-
-
   } catch (error) {
     console.log("error in update", error);
   }

@@ -13,6 +13,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
 model User {
   id                          String    @id @default(auto()) @map("_id") @db.ObjectId
   name                        String
@@ -30,31 +38,45 @@ model User {
   messages                    Message[]
   createdAt                   DateTime  @default(now())
   updatedAt                   DateTime  @updatedAt
+
+  @@index([lastSeen])
 }
 
 model Chat {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String?
-  users       User      @relation(fields: [userIds], references: [id])
-  userIds     String[]  @db.ObjectId
-  seenBy      String[]  @db.ObjectId
-  lastMessage String?
-  messages    Message[]
-  createdAt   DateTime  @default(now())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  users         User      @relation(fields: [userIds], references: [id])
+  userIds       String[]  @db.ObjectId
+  seenBy        String[]  @db.ObjectId
+  lastMessageId String?   @db.ObjectId 
+  lastMessage   Message?  @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  messages      Message[] @relation("ChatMessages")
+  createdAt     DateTime  @default(now())
 }
 
 model Message {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   content     String
   senderId    String   @db.ObjectId
-  chatId      String   @db.ObjectId
   sender      User     @relation(fields: [senderId], references: [id])
-  chat        Chat     @relation(fields: [chatId], references: [id])
+  chatId      String   @db.ObjectId
+  chat        Chat     @relation("ChatMessages", fields: [chatId], references: [id])
+  lastMessage Chat[]   @relation("LastMessage")
+  readBy      String[] @db.ObjectId
+
   mediaUrl    String?
-  messageType String   @default("text")
-  status      String   @default("sent")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  messageType MessageType @default(TEXT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model MessageReadReceipt {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  readAt    DateTime @default(now())
+
+  @@unique([messageId, userId])
 }
 
 // model Contacts {

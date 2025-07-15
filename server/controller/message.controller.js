@@ -23,13 +23,22 @@ export const addMessage = async (req, res) => {
         id: chatId,
       },
       data: {
-        lastMessage: content,
-        seenBy: [userId],
+        lastMessage: {
+          connect: {
+            id: message.id,
+          },
+        },
+        seenBy: {
+          push: [userId],
+        },
       },
     });
     res.status(200).json(message);
   } catch (error) {
-    res.status(500).json({ message: "Internal Service Error" });
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal Service Error", error: error.message });
     throw new Error(error);
   }
 };
@@ -73,12 +82,10 @@ export const deleteMessage = async (req, res) => {
       });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Message deleted successfully",
-        lastMessage: remainingMessages[0].content,
-      });
+    res.status(200).json({
+      message: "Message deleted successfully",
+      lastMessage: remainingMessages[0].content,
+    });
 
     await prisma.chat.update({
       where: { id: chatId },

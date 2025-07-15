@@ -141,12 +141,12 @@ const Login = () => {
 
                   <div>
                     <InputComponent
-                        name="password"
-                        placeholder="Password"
-                        isPasswordVisible={isPasswordVisible}
-                        togglePassword={togglePassword}
-                      />
-                    <p className="text-red-500">{error}</p>
+                      name="password"
+                      placeholder="Password"
+                      isPasswordVisible={isPasswordVisible}
+                      togglePassword={togglePassword}
+                    />
+                    <p className="text-red-500 pt-4">{error}</p>
                     <div>
                       {errors.password ? (
                         <p className="text-red-500 text-sm">
@@ -187,18 +187,22 @@ const Login = () => {
                         isPasswordVisible={isPasswordVisible}
                         togglePassword={togglePassword}
                       />
+
                       {errors.confirmPassword && (
-                        <p className="text-red-500 text-sm">
+                        <p className="text-red-500 text-sm pt-2">
                           {errors.confirmPassword}
                         </p>
                       )}
                     </div>
                   )}
-                  <p className="text-red-500 text-sm">{error.message}</p>
+
+                  {error.message && (
+                    <p className="text-red-500 text-sm pt-2">{error.message}</p>
+                  )}
                 </div>
 
                 {/* forgot password */}
-                <div className="py-2">
+                <div className="py-4 pt-4">
                   {!showReg && (
                     <p
                       onClick={() => {
@@ -212,7 +216,9 @@ const Login = () => {
                 </div>
 
                 {/* have an account */}
-                <div className={`flex flex-row gap-2 text-white text-slate-300 text-sm`}>
+                <div
+                  className={`flex flex-row gap-2 text-white text-slate-300 text-sm`}
+                >
                   {showReg ? (
                     <p className="">Have have an account? </p>
                   ) : (
@@ -258,7 +264,7 @@ const Login = () => {
                   <FcGoogle size={23} />
                 </div>
                 <div className="mini-card flexCenter    rounded-lg  hover:bg-slate-100 hover:shadow-md transition">
-                  <IoLogoApple size={25} color="white" />          
+                  <IoLogoApple size={25} color="white" />
                 </div>
               </div>
             </div>

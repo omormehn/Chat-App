@@ -12,13 +12,13 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <AuthContextProvider>
-        <ChatContextProvider>
-          <SocketContextProvider>
+        <SocketContextProvider>
+          <ChatContextProvider>
             <ThemeProvider>
               <App />
             </ThemeProvider>
-          </SocketContextProvider>
-        </ChatContextProvider>
+          </ChatContextProvider>
+        </SocketContextProvider>
       </AuthContextProvider>
     </BrowserRouter>
   </StrictMode>
