@@ -16,20 +16,17 @@ export const addMessage = async (req, res) => {
         content: content,
         chatId: chatId,
         senderId: userId,
+        readBy: [userId],
       },
     });
+
     await prisma.chat.update({
       where: {
         id: chatId,
       },
       data: {
         lastMessage: {
-          connect: {
-            id: message.id,
-          },
-        },
-        seenBy: {
-          push: [userId],
+          connect: { id: message.id },
         },
       },
     });
@@ -42,6 +39,50 @@ export const addMessage = async (req, res) => {
     throw new Error(error);
   }
 };
+
+export const markAsRead = async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.user.id;
+  try {
+    const unreadMessages = await prisma.message.findMany({
+      where: {
+        chatId,
+
+        NOT: {
+          readBy: {
+            has: userId,
+          },
+        },
+        senderId: {
+          not: userId,
+        },
+      },
+    });
+
+    const readMessages = unreadMessages.map(async (msg) => {
+      return await prisma.message.update({
+        where: {
+          id: msg.id,
+        },
+        data: {
+          readBy: {
+            push: userId,
+          },
+        },
+      });
+    });
+
+    const promise = await Promise.all(readMessages);
+    res.status(200).json({
+      message: "Messages marked as read",
+      readMessages: promise.filter(Boolean)
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server error", error });
+  }
+};
+
 export const deleteMessage = async (req, res) => {
   const { chatId } = req.params;
   const { messageId } = req.body;

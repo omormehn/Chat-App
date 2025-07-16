@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 export const useSocketEvents = (
   socket,
-  { onReceiveMessage, onNewChat, onUpdateMessage }
+  { onReceiveMessage, onNewChat, onUpdateMessage, markAsRead }
 ) => {
   useEffect(() => {
     if (!socket) return;
@@ -16,6 +16,9 @@ export const useSocketEvents = (
     if (onUpdateMessage) {
       socket.on("updateMessage", onUpdateMessage);
     }
+    if (markAsRead) {
+      socket.on("markAsRead", markAsRead);
+    }
 
     return () => {
       if (onReceiveMessage) {
@@ -27,6 +30,9 @@ export const useSocketEvents = (
       if (onUpdateMessage) {
         socket.off("updateMessage", onUpdateMessage);
       }
+      if (markAsRead) {
+        socket.off("markAsRead", markAsRead);
+      }
     };
-  }, [socket, onReceiveMessage, onNewChat, onUpdateMessage]);
+  }, [socket, onReceiveMessage, onNewChat, onUpdateMessage, markAsRead]);
 };

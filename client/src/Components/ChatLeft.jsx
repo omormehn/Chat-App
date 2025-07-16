@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { PuffLoader } from "react-spinners";
 import defaultAvatar from "/src/avatar.svg";
 import AuthContext from "../context/AuthContext";
@@ -18,8 +18,13 @@ import { format } from "timeago.js";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
-  const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
-    useContext(ChatContext);
+  const {
+    selectedChat,
+    setSelectedChat,
+    getChat,
+    setSelectedChatId,
+    readMessage,
+  } = useContext(ChatContext);
   const { user } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
   const { chats, setChats, loading, getChats } = useGetChats();
@@ -28,21 +33,29 @@ const ChatLeft = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
 
+  useEffect(() => {
+    async function init() {
+      if (selectedChat?.id) {
+        try {
+          await api.put(`/messages/read/${selectedChat.id}`);
+        } catch (error) {
+          console.log("err", error);
+        }
+      }
+    }
+
+    init();
+  }, [selectedChat]);
+
   useSocketEvents(socket, {
     onReceiveMessage: (data) => {
       try {
         setChats((prevChats) =>
           prevChats.map((chat) => {
             if (chat.id === data.chatId) {
-              const isChatOpen = selectedChat?.id === data.chatId;
-              const updatedSeenBy = isChatOpen
-                ? [...new Set([...chat.seenBy, user.id])]
-                : chat.seenBy;
-
               return {
                 ...chat,
                 lastMessage: data,
-                seenBy: updatedSeenBy,
                 updatedAt: new Date().toISOString(),
               };
             }
@@ -59,8 +72,6 @@ const ChatLeft = () => {
     },
 
     onUpdateMessage: (updatedChat) => {
-      console.log("skk", updatedChat);
-
       const updateChats = (prevChat, newChat, userId) => {
         const isChat = newChat.userIds.includes(userId);
         if (!isChat) return prevChat;
@@ -89,17 +100,31 @@ const ChatLeft = () => {
     );
   });
 
-  const handleChatClick = (chat) => {
-    if (chat.id === selectedChat?.id) {
-      return;
+  // useEffect(() => {
+  //   handleChatClick()
+  // })
+
+  const handleChatClick = async (chat) => {
+    if (chat.id === selectedChat?.id) return;
+
+    if (!chat.seenBy.includes(user.id)) {
+      setSelectedChat({
+        ...chat,
+        seenBy: [...chat.seenBy, user.id],
+      });
+    } else {
+      console.log("else")
+      setSelectedChat(chat);
     }
-    console.log(getUnreadCount(chat), "sen");
 
-    chat.seenBy = [...chat.seenBy, user.id];
-
-    setSelectedChat(chat);
     setSelectedChatId(chat.id);
     getChat(chat.id);
+
+    try {
+      await readMessage(chat.id);
+    } catch (error) {
+      console.error("Failed to mark messages as read:", error);
+    }
   };
 
   const getUnreadCount = (chat) => {
@@ -176,7 +201,6 @@ const ChatLeft = () => {
         ) : (
           <div className="h-screen">
             {sortedChats.map((chat) => {
-              console.log("chh", chat);
               return (
                 <div
                   key={chat.id}

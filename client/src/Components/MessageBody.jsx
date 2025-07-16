@@ -9,7 +9,6 @@ import { BsLink45Deg } from "react-icons/bs";
 import { BsEmojiSmile } from "react-icons/bs";
 import { AiOutlineSend } from "react-icons/ai";
 import { IoMdTime } from "react-icons/io";
-import { TiMediaPlay } from "react-icons/ti";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 
 /* Context Api */
@@ -29,6 +28,7 @@ const MessageBody = () => {
   const [message, setMessage] = useState("");
   const [hoverMessage, setHoverMessage] = useState(null);
   const [messageMenu, setMessageMenu] = useState(null);
+  
   const { setChats, getChats } = useGetChats();
 
   const { selectedChat, getChat, chat, setChat, readChat } =
@@ -44,6 +44,43 @@ const MessageBody = () => {
   const addEmoji = (emoji) => {
     setMessage((prevMessage) => prevMessage + emoji.native);
   };
+  useEffect(() => {
+    if (!socket) return;
+
+    const markAsRead = (data) => {
+      if (data?.userId === user.id) return;
+      console.log("ch", chat);
+
+      if (chat?.chat?.id !== selectedChat?.id) return;
+      console.log("ch", chat);
+
+      const msgId = data?.messageId;
+      setChat((prev) => {
+        if (!prev.messages) return prev;
+
+        return {
+          ...prev,
+          messages: prev.messages.map((msg) => {
+            const isMatch = msgId.includes(msg.id);
+
+            if (isMatch) {
+              const updatedReadBy = [...new Set([...msg.readBy, data.userId])];
+              return {
+                ...msg,
+                readBy: updatedReadBy,
+              };
+            }
+            return msg;
+          }),
+        };
+      });
+    };
+    socket.on("markAsRead", markAsRead);
+
+    return () => {
+      socket.off("markAsRead", markAsRead);
+    };
+  }, [socket, user.id, chat, selectedChat]);
 
   useSocketEvents(socket, {
     onReceiveMessage: (data) => {
@@ -61,6 +98,9 @@ const MessageBody = () => {
         })
       );
     },
+    // markAsRead: (data) => {
+    //   console.log("dt", data)
+    // }
   });
 
   useEffect(() => {
@@ -136,13 +176,29 @@ const MessageBody = () => {
           userIds: [userId, selectedChat.receiver.id],
           lastMessage: realMessage,
         },
-        userId
+        userId,
       });
 
       socket.emit("sendMessage", {
         data: response.data,
         receiverId: selectedChat.receiver.id,
       });
+
+      // socket.emit("markAsRead", {
+      //   messageId: realMessage.id,
+      //   userId: user.id,
+      // });
+
+      if (selectedChat.receiver.id === user.id) {
+        setChat((prev) => ({
+          ...prev,
+          messages: prev.messages.map((msg) =>
+            msg.id === response.data.id
+              ? { ...msg, readBy: [user.id, selectedChat.receiver.id] }
+              : msg
+          ),
+        }));
+      }
 
       await getChat(chatId);
       e.target.reset();
@@ -218,77 +274,89 @@ const MessageBody = () => {
         <div className="flex flex-col   gap-4 p-4">
           <div>
             {chat.messages ? (
-              chat.messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex flex-col py-2 ${
-                    message.senderId === user.id ? "items-end" : "items-start"
-                  }`}
-                >
+              chat.messages.map((message, index) => {
+                const isSeen =
+                  selectedChat.receiver.id !== user.id &&
+                  message.readBy?.includes(selectedChat.receiver.id);
+
+                console.log(
+                  "Checking if message is seen by:",
+                  selectedChat.receiver.id
+                );
+                console.log("readBy array:", message.readBy, isSeen);
+
+                return (
                   <div
-                    className="message-card relative"
-                    onMouseLeave={handleMessageHover}
-                    onMouseEnter={() => setHoverMessage(index)}
+                    key={index}
+                    className={`flex flex-col py-2 ${
+                      message.senderId === user.id ? "items-end" : "items-start"
+                    }`}
                   >
-                    <div className="flex flex-col gap-1">
-                      <div
-                        className={`flex gap-2 items-center justify-between`}
-                      >
-                        <p>{message.content}</p>
+                    <div
+                      className="message-card relative"
+                      onMouseLeave={handleMessageHover}
+                      onMouseEnter={() => setHoverMessage(index)}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div
+                          className={`flex gap-2 items-center justify-between`}
+                        >
+                          <p>{message.content}</p>
 
-                        {message.senderId === user.id &&
-                          hoverMessage === index && (
-                            <HiOutlineDotsVertical
-                              onClick={() => setMessageMenu(index)}
-                              className={`cursor-pointer ${
-                                messageMenu === index ? "hidden" : ""
-                              }`}
-                            />
+                          {message.senderId === user.id &&
+                            hoverMessage === index && (
+                              <HiOutlineDotsVertical
+                                onClick={() => setMessageMenu(index)}
+                                className={`cursor-pointer ${
+                                  messageMenu === index ? "hidden" : ""
+                                }`}
+                              />
+                            )}
+
+                          {messageMenu === index && (
+                            <div
+                              className={`absolute rounded-xl top-5 ${
+                                message.senderId === user.id
+                                  ? " right-32"
+                                  : " left-28"
+                              } `}
+                            >
+                              <ul className="bg-white px-5 py-2">
+                                <li className="cursor-pointer hover:text-blue-gray-900">
+                                  Edit
+                                </li>
+                                <li
+                                  onClick={(e) => handleDelete(e, message)}
+                                  className="cursor-pointer hover:text-blue-gray-900"
+                                >
+                                  Delete
+                                </li>
+                                <li className="cursor-pointer hover:text-blue-gray-900">
+                                  Forward
+                                </li>
+                              </ul>
+                            </div>
                           )}
-
-                        {messageMenu === index && (
-                          <div
-                            className={`absolute rounded-xl top-5 ${
-                              message.senderId === user.id
-                                ? " right-32"
-                                : " left-28"
-                            } `}
-                          >
-                            <ul className="bg-white px-5 py-2">
-                              <li className="cursor-pointer hover:text-blue-gray-900">
-                                Edit
-                              </li>
-                              <li
-                                onClick={(e) => handleDelete(e, message)}
-                                className="cursor-pointer hover:text-blue-gray-900"
-                              >
-                                Delete
-                              </li>
-                              <li className="cursor-pointer hover:text-blue-gray-900">
-                                Forward
-                              </li>
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-4 justify-between">
-                        <small className="message-time">
-                          {format(message.createdAt)}
-                        </small>
-                        {message.loading ? (
-                          <div>
+                        </div>
+                        <div className="flex gap-4 justify-between">
+                          <small className="message-time">
+                            {format(message.createdAt)}
+                          </small>
+                          {message.loading ? (
                             <IoMdTime />
-                          </div>
-                        ) : (
-                          <div>
-                            <TiMediaPlay size={13} />
-                          </div>
-                        )}
+                          ) : message.senderId === user.id ? (
+                            isSeen ? (
+                              <span className="text-blue-500">✓✓</span>
+                            ) : (
+                              <span>✓</span>
+                            )
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p>No messages yet. Start the conversation!</p>
             )}

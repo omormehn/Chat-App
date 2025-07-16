@@ -1,13 +1,13 @@
 import prisma from "../prisma/config.js";
-import { generateRand } from "../utils/generateVerifCode.js";
+
 export const getChats = async (req, res) => {
   const userId = req.user.id;
   try {
     const chats = await prisma.chat.findMany({
       where: { userIds: { hasSome: [userId] } },
       include: {
-        lastMessage: true
-      }
+        lastMessage: true,
+      },
     });
 
     for (const chat of chats) {
@@ -33,7 +33,7 @@ export const getChat = async (req, res) => {
   const userId = req.user.id;
   const { chatId } = req.params;
   try {
-    const chat = await prisma.chat.findUnique({
+    const chat = await prisma.chat.findFirst({
       where: {
         id: chatId,
         userIds: {
@@ -58,11 +58,9 @@ export const getChat = async (req, res) => {
   }
 };
 
-
 export const addChat = async (req, res) => {
   const { id } = req.user;
   const { receiverId } = req.body;
-  const lastMsgId = generateRand()
   if (!id || !receiverId) {
     return res.status(400).json({ message: "Missing required parameters" });
   }
@@ -73,8 +71,7 @@ export const addChat = async (req, res) => {
           hasEvery: [id, receiverId],
         },
       },
-    });
-    console.log(lastMsgId)
+    }); 
     if (existingChat)
       return res.status(409).json({ message: "Chat already exists with user" });
     const chat = await prisma.chat.create({
@@ -105,20 +102,29 @@ export const addChat = async (req, res) => {
 export const readChat = async (req, res) => {
   const { chatId } = req.params;
   const userId = req.user.id;
+
   try {
-    const chat = await prisma.chat.update({
-      where: {
-        id: chatId,
-        userIds: {
-          hasSome: [userId],
-        },
-      },
-      data: {
-        seenBy: {
-          push: userId,
-        },
-      },
+    const chat = await prisma.chat.findUnique({
+      where: { id: chatId },
+      select: { seenBy: true },
     });
+    if (!chat.seenBy.includes(userId)) {
+      const updatedChat = await prisma.chat.update({
+        where: {
+          id: chatId,
+        },
+        data: {
+          seenBy: {
+            push: userId,
+          },
+        },
+      });
+      return res.json(updatedChat);
+    }
+
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
     res.json(chat);
   } catch (error) {
     console.log(error);

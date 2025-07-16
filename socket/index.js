@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import dotenv from "dotenv";
+import { use } from "react";
 
 dotenv.config();
 
@@ -58,6 +59,15 @@ io.on("connection", (socket) => {
 
     if (user) {
       io.to(user.socketId).emit("updateMessage", chat);
+    }
+  });
+
+  socket.on("markAsRead", (data) => {
+    const user = getUser(data.userId);
+    console.log(user)
+
+    if (user) {
+      io.to(user.socketId).emit("markAsRead", data);
     }
   });
 

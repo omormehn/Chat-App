@@ -63,6 +63,7 @@ model Message {
   chat        Chat     @relation("ChatMessages", fields: [chatId], references: [id])
   lastMessage Chat[]   @relation("LastMessage")
   readBy      String[] @db.ObjectId
+  
 
   mediaUrl    String?
   messageType MessageType @default(TEXT)
