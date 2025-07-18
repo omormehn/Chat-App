@@ -28,7 +28,6 @@ export const getUser = async (req, res) => {
 export const updateProfile = async (req, res) => {
   const { id } = req.user;
   const { ...defaults } = req.body;
-  const fileUrl = `${BASE_URL}/uploads/profile/${req.file.filename}` || null;
 
   try {
     const existingUser = await prisma.user.findFirst({
@@ -44,13 +43,12 @@ export const updateProfile = async (req, res) => {
       },
       data: {
         ...defaults,
-        avatar: fileUrl,
       },
     });
 
     res
       .status(200)
-      .json({ message: "User updated Successfully", user, fileUrl });
+      .json({ message: "User updated Successfully", user });
   } catch (error) {
     res.status(500).json({ message: "Internal service error", error });
     throw new Error(error);

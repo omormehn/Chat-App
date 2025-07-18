@@ -170,7 +170,7 @@ const ChatLeft = () => {
             }}
           >
             <img
-              src={user.avatar ? user.avatar : defaultAvatar}
+              src={user.avatar ? user.avatar : "image.png"}
               className="rounded-full size-8 bg-white"
               alt="avatar"
             />
