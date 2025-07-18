@@ -9,6 +9,7 @@ import { FaTrash } from "react-icons/fa";
 
 import { api } from "../utils/api";
 import { toast } from "react-hot-toast";
+import UploadWidget from "../utils/UploadWidget";
 
 function UpdateProfile() {
   const { user, updateUser } = useContext(AuthContext);
@@ -23,7 +24,6 @@ function UpdateProfile() {
 
   const fileInputRef = useRef(null);
 
-
   const handleSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
@@ -34,17 +34,17 @@ function UpdateProfile() {
     formData.append("email", email);
     formData.append("bio", bio);
     formData.append("avatar", avatar);
+
+    console.log("ava", avatar);
     try {
-      const response = await api.post("update-profile/", formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-     
-      updateUser({ ...response.data.user, avatar: response.data.fileUrl });
+      const response = await api.post("update-profile/", formData);
+
+      updateUser({ ...response.data.user });
       toast.success("Profile updated successfully!");
       navigate("/profile");
     } catch (error) {
       toast.error("Error updating Profile!");
+      console.log("er", error);
       throw new Error(error);
     } finally {
       setLoading(false);
@@ -54,8 +54,6 @@ function UpdateProfile() {
   const handleFileInput = () => {
     fileInputRef.current.click();
   };
-
- 
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -68,9 +66,9 @@ function UpdateProfile() {
 
   const handleDeleteImage = async (e) => {};
 
-   useEffect(() => {
-     setPreview(null);
-   }, []);
+  useEffect(() => {
+    setPreview(null);
+  }, []);
 
   return (
     <div>
@@ -99,7 +97,7 @@ function UpdateProfile() {
               onMouseLeave={() => setHovered(false)}
             >
               <img
-                src={preview || user.avatar || defaultAvatar}
+                src={avatar || user.avatar || defaultAvatar}
                 alt="Default Avatar"
                 width={100}
                 height={100}
@@ -107,34 +105,31 @@ function UpdateProfile() {
               />
 
               {hovered && (
-                <div
-                  className="absolute inset-0 top-2 left-0 flex justify-center items-center cursor-pointer "
-                  onClick={avatar ? handleDeleteImage : handleFileInput}
-                >
-                  {avatar ? (
-                    <FaTrash
-                      size={30}
-                      opacity={0.7}
-                      className="cursor-pointer"
-                    />
-                  ) : (
-                    <FaPlus
-                      size={30}
-                      opacity={0.7}
-                      className="cursor-pointer"
+                <div className="absolute inset-0 top-2 left-0 flex justify-center items-center cursor-pointer ">
+                  {!avatar && (
+                    <UploadWidget
+                      uwConfig={{
+                        cloudName: "omormehn",
+                        uploadPreset: "chat-app",
+                        multiple: false,
+                        maxImageSize: 2000000,
+                        folder: "avatars",
+                      }}
+                      setAvatar={setAvatar}
                     />
                   )}
                 </div>
               )}
-              <input
+            </div>
+            {/* <input
                 name="avatar"
                 ref={fileInputRef}
                 type="file"
                 onChange={handleFileChange}
                 className="hidden"
                 accept=".png, .jpg, .jpeg, .svg, .webp"
-              />
-            </div>
+              /> */}
+
             <div className="flex flex-col gap-4 ">
               <h1 className="font-semibold">Name:</h1>
               <div className="border-b-2 w-full">
