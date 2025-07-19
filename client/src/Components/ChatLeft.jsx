@@ -103,14 +103,14 @@ const ChatLeft = () => {
     return (
       currentUser.id !== user.id &&
       Array.isArray(chats) &&
-      !chats.some((chat) => chat?.userIds.includes(currentUser.id))
+      !chats.some((chat) => chat?.userIds?.includes(currentUser?.id))
     );
   });
 
   const handleChatClick = async (chat) => {
     if (chat?.id === selectedChat?.id) return;
 
-    if (!chat?.seenBy.includes(user.id)) {
+    if (!chat?.seenBy?.includes(user.id)) {
       setSelectedChat({
         ...chat,
         seenBy: [...chat.seenBy, user.id],
@@ -142,10 +142,10 @@ const ChatLeft = () => {
     }
   };
 
-  const getUnreadCount = (chat) => {
-    if (selectedChat?.id === chat.id) return 0;
-    return chat?.seenBy.includes(user.id) ? 0 : 1;
-  };
+  // const getUnreadCount = (chat) => {
+  //   if (selectedChat?.id === chat.id) return 0;
+  //   return chat?.seenBy.includes(user.id) ? 0 : 1;
+  // };
   const addChat = async (receiver) => {
     const receiverId = receiver.id;
     try {
@@ -160,7 +160,7 @@ const ChatLeft = () => {
       socket.emit("createChat", { chat: newChat, receiverId });
 
       const newChats = await getChats();
-      const chat = newChats.find((chat) => chat?.userIds.includes(receiverId));
+      const chat = newChats.find((chat) => chat?.userIds?.includes(receiverId));
 
       if (chat) {
         handleChatClick(chat);
@@ -262,11 +262,11 @@ const ChatLeft = () => {
                         </p>
                       )}
                     </div>
-                    {getUnreadCount(chat) > 0 && (
+                    {/* {getUnreadCount(chat) > 0 && (
                       <div className="bg-red-500 text-white text-xs flex items-center justify-center h-5 w-5 rounded-full">
                         {getUnreadCount(chat)}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               );
