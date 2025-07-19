@@ -216,7 +216,7 @@ const ChatLeft = () => {
         ) : (
           <div className="h-screen">
             {sortedChats.map((chat) => {
-              const time = dayjs(chat.lastMessage.createdAt).format("HH:mm");
+              const time = dayjs(chat?.lastMessage?.createdAt).format("HH:mm");
 
               return (
                 <div
@@ -229,17 +229,17 @@ const ChatLeft = () => {
                   <div className="flex gap-4">
                     {/* Profile Picture */}
                     <img
-                      src={chat.receiver?.avatar || "image.png"}
+                      src={chat?.receiver?.avatar || "image.png"}
                       className="size-12 rounded-full"
                     ></img>
                     {/* Chat Info */}
                     <div className="">
                       <h1 className="font-bold text-lg">
-                        {chat.receiver?.name}
+                        {chat?.receiver?.name}
                       </h1>
                       <div className="flex gap-4 overflow-hidden flex-row  ">
                         <p className="font-light  truncate ">
-                          {chat.lastMessage?.content}
+                          {chat?.lastMessage?.content}
                         </p>
                       </div>
                     </div>
@@ -253,7 +253,7 @@ const ChatLeft = () => {
                     }}
                   >
                     <div>
-                      {new Date(chat?.lastMessage.createdAt).toLocaleTimeString(
+                      {new Date(chat?.lastMessage?.createdAt).toLocaleTimeString(
                         [],
                         {
                           hour: "2-digit",
