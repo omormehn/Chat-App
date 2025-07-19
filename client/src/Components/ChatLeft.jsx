@@ -119,21 +119,21 @@ const ChatLeft = () => {
       setSelectedChat(chat);
     }
 
-    setSelectedChatId(chat.id);
-    getChat(chat.id);
+    setSelectedChatId(chat?.id);
+    getChat(chat?.id);
 
     try {
-      console.log(chat);
+      
       // const read = await readMessage(chat.id);
-      await api.post(`/messages/add/update/${chat.id}`, {
+      await api.post(`/messages/add/update/${chat?.id}`, {
         messageId: [chat?.lastMessage.id],
         status: "READ",
       });
 
-      console.log(socket);
+
       socket.emit("updateStatus", {
         messageId: chat?.lastMessage.id,
-        userId: user.id,
+        userId: user?.id,
         senderId: chat?.lastMessage.senderId,
         status: "READ",
       });
