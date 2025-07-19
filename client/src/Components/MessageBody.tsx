@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PuffLoader } from "react-spinners";
 import { api } from "../utils/api";
 import { format } from "timeago.js";
@@ -12,9 +11,9 @@ import { IoMdTime } from "react-icons/io";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 
 /* Context Api */
-import ChatContext from "../context/ChatContext";
-import AuthContext from "../context/AuthContext";
-import SocketContext from "../context/SocketContext";
+import { chatContext } from "../context/ChatContext";
+import { useAuth } from "../context/AuthContext";
+import { getSocket } from "../context/SocketContext";
 
 /* Emoji */
 import Picker from "@emoji-mart/react";
@@ -22,79 +21,45 @@ import data from "@emoji-mart/data";
 
 /* Hook */
 import useGetChats from "../hooks/useGetChats";
-import { useSocketEvents } from "../hooks/useSocketEvents";
+import useSocketEvents from "../hooks/useSocketEvents";
+import { Chat, Message, MessageType, Status } from "../../types/types";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 const MessageBody = () => {
   const [message, setMessage] = useState("");
-  const [hoverMessage, setHoverMessage] = useState(null);
-  const [messageMenu, setMessageMenu] = useState(null);
+  const [hoverMessage, setHoverMessage] = useState<number | null>(null);
+  const [messageMenu, setMessageMenu] = useState<number | null>(null);
 
   const { setChats, getChats } = useGetChats();
 
-  const { selectedChat, getChat, chat, setChat, readChat } =
-    useContext(ChatContext);
-  const { socket } = useContext(SocketContext);
+  const { selectedChat, getChat, chat, setChat, readChat } = chatContext()
+  const { socket } = getSocket()
 
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth()
 
-  const chatEndRef = useRef();
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const [showPicker, setShowPicker] = useState(false);
 
-  const addEmoji = (emoji) => {
+  const addEmoji = (emoji: any) => {
     setMessage((prevMessage) => prevMessage + emoji.native);
   };
-  useEffect(() => {
-    if (!socket) return;
 
-    const markAsRead = (data) => {
-      if (data?.userId === user.id) return;
-      console.log("ch", chat);
-
-      if (chat?.chat?.id !== selectedChat?.id) return;
-      console.log("ch", chat);
-
-      const msgId = data?.messageId;
-      setChat((prev) => {
-        if (!prev.messages) return prev;
-
-        return {
-          ...prev,
-          messages: prev.messages.map((msg) => {
-            const isMatch = msgId.includes(msg.id);
-
-            if (isMatch) {
-              const updatedReadBy = [...new Set([...msg.readBy, data.userId])];
-              return {
-                ...msg,
-                readBy: updatedReadBy,
-              };
-            }
-            return msg;
-          }),
-        };
-      });
-    };
-    socket.on("markAsRead", markAsRead);
-
-    return () => {
-      socket.off("markAsRead", markAsRead);
-    };
-  }, [socket, user.id, chat, selectedChat]);
 
   useSocketEvents(socket, {
-    onReceiveMessage: (data) => {
-      console.log('dt', data)
-      
-      if (chat && chat.chat.id === data.chatId) {
-        setChat((prev) => ({
-          ...prev,
-          messages: [...prev.messages, data],
-        }));
+    onReceiveMessage: (data: Message) => {
+      if (chat && chat.id === data.chatId) {
+        setChat((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: [...prev.messages ?? [], data],
+          }
+        });
       }
       setChats((prevChats) =>
         prevChats.map((chat) => {
-          return chat.id === selectedChat.id
+          return chat.id === selectedChat?.id
             ? { ...chat, lastMessage: data }
             : chat;
         })
@@ -103,29 +68,31 @@ const MessageBody = () => {
     // markAsRead: (data) => {
     //   console.log("dt", data)
     // }
-    onUpdateStatus: (data) => {
-      
-      if(data.messageId.length < 1) return;
+    onUpdateStatus: (data: { messageId: string[], status: Status }) => {
+
+      if (data.messageId.length < 1) return;
       console.log("update status for sender", data);
-      setChat((prev) => ({
-        ...prev,
-        messages: prev?.messages.map((msg) => {
-          const isMatch = data.messageId.includes(msg.id);
-          
-          if (!isMatch) {
-            return msg;
-          }
 
-          const status = data.status;
+      setChat((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: prev?.messages?.map((msg) => {
+            const isMatch = data.messageId.includes(msg.id);
+            if (!isMatch) {
+              return msg;
+            }
+            const status = data.status;
+            return {
+              ...msg,
+              status,
+            };
+          }),
+        }
+      });
+    }
 
-          return {
-            ...msg,
-            status,
-          };
-        }),
-      }));
-    },
-  });
+  })
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -138,44 +105,68 @@ const MessageBody = () => {
           await getChat(selectedChat.id);
           await readChat(selectedChat.id);
         } catch (error) {
-          throw new Error(error);
+          handleAxiosError(error, "fetch chat details in message body")
         }
       }
     };
     fetchChatDetails();
   }, [selectedChat]);
 
-  const addMessage = async (e) => {
+  useEffect(() => {
+    const markMessagesAsRead = async () => {
+      if (chat?.id && user && selectedChat?.lastMessage) {
+        socket?.emit("updateStatus", {
+          messageId: [selectedChat.lastMessage.id],
+          userId: user.id,
+          senderId: selectedChat.receiver?.id,
+          status: "READ",
+        });
+      }
+    };
+
+    markMessagesAsRead();
+  }, [chat?.id]);
+
+  const addMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const content = e.target.message.value;
-    const chatId = selectedChat.id;
-    const userId = user.id;
+    const form = e.target as HTMLFormElement
+    const content = form.message.value;
+    const chatId = selectedChat?.id!;
+    const userId = user?.id!;
 
     const newMessage = {
+      id: crypto.randomUUID(),
       chatId,
+      sender: user!,
       senderId: userId,
+      chat: {} as Chat,
+      lastMessage: [],
+      readBy: [],
       content,
-      mediaUrl: null,
-      messageType: "text",
-      status: "sent",
+      mediaUrl: "",
+      messageType: "text" as MessageType,
+      status: "SENT" as Status,
       updatedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       loading: true,
-    };
+    } as Message;
 
     try {
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
+      setChats((prevChats) => {
+        return prevChats.map((chat) =>
           chat.id === newMessage.chatId
             ? { ...chat, lastMessage: newMessage }
             : chat
         )
-      );
+      });
 
-      setChat((prev) => ({
-        ...prev,
-        messages: [...prev.messages, newMessage],
-      }));
+      setChat((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: [...prev?.messages!, newMessage],
+        }
+      });
 
       setMessage("");
 
@@ -185,56 +176,64 @@ const MessageBody = () => {
       });
 
       const realMessage = response.data;
-      setChat((prevChat) => ({
-        ...prevChat,
-        messages: prevChat.messages.map((msg) =>
-          msg.createdAt === newMessage.createdAt
-            ? { ...realMessage, loading: false }
-            : msg
-        ),
-      }));
+      setChat((prevChat) => {
+        if (!prevChat) return null;
+        return {
+          ...prevChat,
+          messages: prevChat.messages?.map((msg: Message) =>
+            msg.createdAt === newMessage.createdAt
+              ? { ...realMessage, loading: false }
+              : msg
+          ),
+        }
+      });
 
-      socket.emit("updateLastMessage", {
+      socket?.emit("updateLastMessage", {
         chat: {
           id: chatId,
-          userIds: [userId, selectedChat.receiver.id],
+          userIds: [userId, selectedChat?.receiver?.id],
           lastMessage: realMessage,
         },
         userId,
       });
 
-      socket.emit("sendMessage", {
+      socket?.emit("sendMessage", {
         data: response.data,
-        receiverId: selectedChat.receiver.id,
+        receiverId: selectedChat?.receiver?.id,
       });
 
       // socket.emit("markAsRead", {
       //   messageId: realMessage.id,
-      //   userId: user.id,
+      //   userId: user?.id,
       // });
 
-      if (selectedChat.receiver.id === user.id) {
-        setChat((prev) => ({
-          ...prev,
-          messages: prev.messages.map((msg) =>
-            msg.id === response.data.id
-              ? { ...msg, readBy: [user.id, selectedChat.receiver.id] }
-              : msg
-          ),
-        }));
+      if (selectedChat?.receiver?.id === user?.id) {
+        setChat((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: prev.messages?.map((msg) =>
+              msg.id === response.data.id
+                ? { ...msg, readBy: [user?.id!, selectedChat?.receiver?.id!] }
+                : msg
+            ),
+          }
+        });
       }
 
       await getChat(chatId);
-      e.target.reset();
+      form.reset();
     } catch (error) {
-      setChat((prev) => ({
-        ...prev,
-        messages: prev.messages.filter(
-          (msg) => msg.createdAt !== newMessage.createdAt
-        ),
-      }));
-      console.log("error", error);
-      throw new Error(error);
+      setChat((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: prev.messages?.filter(
+            (msg) => msg.createdAt !== newMessage.createdAt
+          ),
+        }
+      });
+      handleAxiosError(error, "add message")
     }
   };
 
@@ -253,15 +252,18 @@ const MessageBody = () => {
     setMessageMenu(null);
   };
 
-  const handleDelete = async (e, message) => {
+  const handleDelete = async (e: React.FormEvent, message: Message) => {
     e.preventDefault;
-    const chatId = chat.chat.id;
+    const chatId = chat.id;
     const messageId = message.id;
     try {
-      setChat((prev) => ({
-        ...prev,
-        messages: prev.messages.filter((msg) => msg.id !== messageId),
-      }));
+      setChat((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: prev.messages?.filter((msg) => msg.id !== messageId),
+        }
+      });
 
       const res = await api.post(`/messages/delete/${chatId}`, {
         messageId,
@@ -302,9 +304,8 @@ const MessageBody = () => {
                 return (
                   <div
                     key={index}
-                    className={`flex flex-col py-2 ${
-                      message.senderId === user.id ? "items-end" : "items-start"
-                    }`}
+                    className={`flex flex-col py-2 ${message.senderId === user?.id ? "items-end" : "items-start"
+                      }`}
                   >
                     <div
                       className="message-card relative"
@@ -317,23 +318,21 @@ const MessageBody = () => {
                         >
                           <p>{message.content}</p>
 
-                          {message.senderId === user.id &&
+                          {message.senderId === user?.id &&
                             hoverMessage === index && (
                               <HiOutlineDotsVertical
                                 onClick={() => setMessageMenu(index)}
-                                className={`cursor-pointer ${
-                                  messageMenu === index ? "hidden" : ""
-                                }`}
+                                className={`cursor-pointer ${messageMenu === index ? "hidden" : ""
+                                  }`}
                               />
                             )}
 
                           {messageMenu === index && (
                             <div
-                              className={`absolute rounded-xl top-5 ${
-                                message.senderId === user.id
-                                  ? " right-32"
-                                  : " left-28"
-                              } `}
+                              className={`absolute rounded-xl top-5 ${message.senderId === user?.id
+                                ? " right-32"
+                                : " left-28"
+                                } `}
                             >
                               <ul className="bg-white px-5 py-2">
                                 <li className="cursor-pointer hover:text-blue-gray-900">
@@ -359,7 +358,7 @@ const MessageBody = () => {
 
                           {message.loading ? (
                             <IoMdTime />
-                          ) : message.senderId === user.id ? (
+                          ) : message.senderId === user?.id ? (
                             message.status === "READ" ? (
                               <span className="text-blue-500">✓✓</span>
                             ) : message.status === "DELIVERED" ? (

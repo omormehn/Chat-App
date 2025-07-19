@@ -1,12 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
+import App from "./App.tsx";
 import "./index.css";
-import { ChatContextProvider } from "./context/ChatContext.jsx";
+import { ChatContextProvider } from "./context/ChatContext.tsx";
 import { BrowserRouter } from "react-router-dom";
-import { SocketContextProvider } from "./context/SocketContext.jsx";
+import { SocketContextProvider } from "./context/SocketContext.tsx";
 import { ThemeProvider } from "@material-tailwind/react";
-import { AuthContextProvider } from "./context/AuthContext.jsx";
+import { AuthContextProvider } from "./context/AuthContext.tsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

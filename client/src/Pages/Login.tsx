@@ -1,19 +1,20 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoLogoApple } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext.js";
 import { Typography } from "@material-tailwind/react";
-import InputComponent from "../Components/InputComponent.jsx";
+import InputComponent from "../Components/InputComponent.js";
 
 const Login = () => {
   const [showReg, setshowReg] = useState(false);
-  // const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  // const [error, setError] = useState("");
+  const [errors, setErrors] = useState({ email: "", password: "", confirmPassword: "" });
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
-  const { login, register, loading, error, setError } = useContext(AuthContext);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
+  const { login, register, loading, error, setError } = useAuth();
 
   const navigate = useNavigate();
 
@@ -21,8 +22,8 @@ const Login = () => {
     setPasswordVisible(!isPasswordVisible);
   };
 
-  const validateForm = (formData) => {
-    const newErrors = {};
+  const validateForm = (formData: FormData) => {
+    const newErrors = { email: "", password: "", confirmPassword: "" };
     let password = formData.get("password");
     let confirmPassword = formData.get("confirm-password");
 
@@ -37,36 +38,31 @@ const Login = () => {
         newErrors.confirmPassword = "Password does not match";
       }
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(newErrors); 
+    const hasErrors = Object.values(newErrors).some((val) => val !== "");
+    return !hasErrors;
   };
 
-  const handleSignup = async (e) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     if (!validateForm(formData)) {
       return;
     }
-    const email = formData.get("email");
-    const password = formData.get("password");
 
     try {
-      const response = await register(email, password);
-      if (response.status === 200) {
-        navigate("/profile-setup");
-      }
+      await register(email, password);
     } catch (error) {
       console.log("error in signup", error);
     }
   };
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     if (!validateForm(formData)) {
       return;
     }
-    const email = formData.get("email");
-    const password = formData.get("password");
+
     try {
       await login(email, password);
     } catch (error) {
@@ -77,7 +73,7 @@ const Login = () => {
   const toggleForm = () => {
     setshowReg(!showReg);
     setError("");
-    setErrors({});
+    setErrors({ email: "", password: "", confirmPassword: "" });
   };
 
   return (
@@ -86,9 +82,8 @@ const Login = () => {
       <div className="flexCenter  md:pt-5 overflow-hidden  ">
         {/* card */}
         <div
-          className={`flex items-center justify-center w-[700px] overflow-hidden min-h-dvh max-w-full md:rounded-2xl ${
-            showReg ? "flex-row-reverse" : ""
-          } bg-slate-800  card`}
+          className={`flex items-center justify-center w-[700px] overflow-hidden min-h-dvh max-w-full md:rounded-2xl ${showReg ? "flex-row-reverse" : ""
+            } bg-slate-800  card`}
         >
           {/* Card sections */}
           <div className="flex-1 bg-black p-6 sm:p-10 flexCol">
@@ -110,6 +105,7 @@ const Login = () => {
                       placeholder="Email"
                       autoFocus
                       className="auth-inputs w-full bg-black "
+                      onChange={(text) => setEmail(text.target.value)}
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm">{errors.email}</p>
@@ -122,6 +118,7 @@ const Login = () => {
                       placeholder="Password"
                       isPasswordVisible={isPasswordVisible}
                       togglePassword={togglePassword}
+                      onChange={(text) => setPassword(text.target.value)}
                     />
                     <p className="text-red-500 pt-4">{error}</p>
                     <div>
@@ -132,6 +129,7 @@ const Login = () => {
                       ) : (
                         showReg && (
                           <Typography
+                            {...({} as React.ComponentProps<typeof Typography>)}
                             variant="small"
                             color="gray"
                             className="mt-2 flex items-center gap-1 font-normal"
@@ -173,8 +171,8 @@ const Login = () => {
                     </div>
                   )}
 
-                  {error.message && (
-                    <p className="text-red-500 text-sm pt-2">{error.message}</p>
+                  {error && (
+                    <p className="text-red-500 text-sm pt-2">{error}</p>
                   )}
                 </div>
 

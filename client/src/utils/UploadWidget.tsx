@@ -2,10 +2,16 @@
 import { FaPlus } from "react-icons/fa";
 import { createContext, useEffect, useState } from "react";
 
-const CloudinaryScriptContext = createContext();
+type CloudinaryProps = { loaded: boolean }
+interface UploadWidgetProps {
+  uwConfig: object; 
+  setAvatar: (url: string) => void;
+}
 
-function UploadWidget({ uwConfig, setAvatar }) {
-  const [loaded, setLoaded] = useState(false);
+const CloudinaryScriptContext = createContext<CloudinaryProps | null>(null);
+
+function UploadWidget({ uwConfig, setAvatar }: UploadWidgetProps) {
+  const [loaded, setLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     // Check if the script is already loaded
@@ -30,14 +36,14 @@ function UploadWidget({ uwConfig, setAvatar }) {
     if (loaded) {
       var myWidget = window.cloudinary.createUploadWidget(
         uwConfig,
-        (error, result) => {
+        (error: any, result: any) => {
           if (!error && result && result.event === "success") {
             setAvatar(result.info.secure_url);
           }
         }
       );
 
-      document.getElementById("upload_widget").addEventListener(
+      document.getElementById("upload_widget")?.addEventListener(
         "click",
         function () {
           myWidget.open();

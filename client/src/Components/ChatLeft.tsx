@@ -2,27 +2,28 @@
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PuffLoader } from "react-spinners";
-import defaultAvatar from "/src/avatar.svg";
-import AuthContext from "../context/AuthContext";
-import ChatContext from "../context/ChatContext";
+import AuthContext, { useAuth } from "../context/AuthContext";
+import ChatContext, { chatContext } from "../context/ChatContext";
 import useGetChats from "../hooks/useGetChats";
-import SocketContext from "../context/SocketContext";
-import { Card, Typography, CardBody, Dialog } from "@material-tailwind/react";
+import SocketContext, { getSocket } from "../context/SocketContext";
+import { Dialog, Card, Typography, CardBody, } from "@material-tailwind/react";
 import useGetUsers from "../hooks/useGetUsers";
 import { api } from "../utils/api";
 import toast from "react-hot-toast";
-import { useSocketEvents } from "../hooks/useSocketEvents";
+import useSocketEvents from "../hooks/useSocketEvents";
 import { format } from "timeago.js";
 import dayjs from "dayjs";
+import { Chat, Message, User } from "../../types/types";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
   const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
-    useContext(ChatContext);
-  const { user } = useContext(AuthContext);
-  const { socket } = useContext(SocketContext);
+    chatContext();
+  const { user } = useAuth();
+  const { socket } = getSocket();
   const { chats, setChats, loading, getChats } = useGetChats();
   const { users } = useGetUsers();
 
@@ -44,13 +45,15 @@ const ChatLeft = () => {
   }, [selectedChat]);
 
   useSocketEvents(socket, {
-    onReceiveMessage: async (data) => {
+    onReceiveMessage: async (data: Message) => {
       console.log("data", data);
       try {
         await api.post(`/messages/add/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
         });
+        
+        
         setChats((prevChats) =>
           prevChats.map((chat) => {
             if (chat.id === data.chatId) {
@@ -64,9 +67,9 @@ const ChatLeft = () => {
           })
         );
 
-        socket.emit("updateStatus", {
+        socket?.emit("updateStatus", {
           messageId: [data.id],
-          userId: user.id,
+          userId: user?.id,
           senderId: data.senderId,
           status: "DELIVERED",
         });
@@ -74,47 +77,48 @@ const ChatLeft = () => {
         console.log("error", error);
       }
     },
-    onNewChat: (chat) => {
+    onNewChat: (chat: Chat) => {
       setChats((prev) => [...prev, chat]);
     },
 
-    onUpdateMessage: (updatedChat) => {
-      const updateChats = (prevChat, newChat, userId) => {
+    onUpdateMessage: (updatedChat: Chat) => {
+      const updateChats = (prevChats: Chat[], newChat: Chat, userId: string) => {
         const isChat = newChat?.userIds?.includes(userId);
-        if (!isChat) return prevChat;
+        if (!isChat) return prevChats;
 
-        return prevChat.map((chat) =>
+        return prevChats.map((chat) =>
           chat.id === newChat.id
             ? { ...chat, lastMessage: newChat.lastMessage }
             : chat
         );
       };
-      setChats((prevChats) => updateChats(prevChats, updatedChat, user.id));
+      setChats((prevChats) => updateChats(prevChats, updatedChat, user?.id!));
     },
   });
 
-  const sortedChats = [...chats].sort(
-    (a, b) =>
-      new Date(b.updatedAt || b.createdAt) -
-      new Date(a.updatedAt || a.createdAt)
+  const sortedChats = [...chats].sort((a, b) => {
+    const DateA = new Date(b.updatedAt ?? b.createdAt).getTime();
+    const DateB = new Date(a.updatedAt ?? a.createdAt).getTime();
+    return DateA - DateB;
+  }
   );
 
-  const filteredUsers = users.filter((currentUser) => {
+  const filteredUsers = users.filter((currentUser: User) => {
     return (
-      currentUser.id !== user.id &&
+      currentUser.id !== user?.id &&
       Array.isArray(chats) &&
-      !chats.some((chat) => chat?.userIds?.includes(currentUser?.id))
+      !chats.some((chat) => chat?.userIds.includes(currentUser?.id))
     );
   });
 
-  const handleChatClick = async (chat) => {
+  const handleChatClick = async (chat: Chat) => {
     if (chat?.id === selectedChat?.id) return;
-    if(!chat) return;
+    if (!chat) return;
 
-    if (!chat?.seenBy?.includes(user?.id)) {
+    if (!chat?.seenBy?.includes(user?.id!)) {
       setSelectedChat({
         ...chat,
-        seenBy: [...chat.seenBy, user.id],
+        seenBy: [...chat.seenBy, user?.id!],
       });
     } else {
       setSelectedChat(chat);
@@ -124,15 +128,13 @@ const ChatLeft = () => {
     getChat(chat?.id);
 
     try {
-      
-      // const read = await readMessage(chat.id);
       await api.post(`/messages/add/update/${chat?.id}`, {
         messageId: [chat?.lastMessage?.id],
         status: "READ",
       });
 
 
-      socket.emit("updateStatus", {
+      socket?.emit("updateStatus", {
         messageId: chat?.lastMessage?.id,
         userId: user?.id,
         senderId: chat?.lastMessage?.senderId,
@@ -147,7 +149,7 @@ const ChatLeft = () => {
   //   if (selectedChat?.id === chat.id) return 0;
   //   return chat?.seenBy.includes(user.id) ? 0 : 1;
   // };
-  const addChat = async (receiver) => {
+  const addChat = async (receiver: User) => {
     const receiverId = receiver.id;
     try {
       setOpen(false);
@@ -158,10 +160,10 @@ const ChatLeft = () => {
       const newChat = res.data;
 
       setChats((prev) => [...prev, newChat]);
-      socket.emit("createChat", { chat: newChat, receiverId });
+      socket?.emit("createChat", { chat: newChat, receiverId });
 
       const newChats = await getChats();
-      const chat = newChats.find((chat) => chat?.userIds?.includes(receiverId));
+      const chat = newChats.find((chat: Chat) => chat?.userIds?.includes(receiverId));
 
       if (chat) {
         handleChatClick(chat);
@@ -170,8 +172,7 @@ const ChatLeft = () => {
       }
     } catch (error) {
       toast.error("Failed to add chat");
-      console.log(error);
-      throw new Error(error);
+      handleAxiosError(error, "failed to add chat")
     }
   };
 
@@ -186,7 +187,7 @@ const ChatLeft = () => {
             }}
           >
             <img
-              src={user.avatar ? user.avatar : "image.png"}
+              src={user?.avatar ? user.avatar : "image.png"}
               className="rounded-full size-8 bg-white"
               alt="avatar"
             />
@@ -281,23 +282,29 @@ const ChatLeft = () => {
         )}
       </div>
       <Dialog
+        {...({} as React.ComponentProps<typeof Dialog>)}
         size="xs"
         open={open}
         handler={handleOpen}
         className="bg-transparent shadow-none"
       >
-        <Card className="mx-auto w-full  h-screen ">
-          <CardBody className="flex flex-col gap-4 overflow-auto">
-            <Typography variant="h4" color="blue-gray">
+        <Card
+          {...({} as React.ComponentProps<typeof Card>)}
+          className="mx-auto w-full  h-screen ">
+          <CardBody
+            {...({} as React.ComponentProps<typeof CardBody>)}
+            className="flex flex-col gap-4 overflow-auto">
+            <Typography
+              {...({} as React.ComponentProps<typeof Typography>)}
+              variant="h4" color="blue-gray">
               Add Chat
             </Typography>
             <hr className="bg-black h-0.5" />
 
-            <Typography
+            <div
               className="flex flex-col gap-4 overflow-auto"
-              variant="h3"
             >
-              {filteredUsers.map((user) => (
+              {filteredUsers.map((user: User) => (
                 <div
                   key={user?.id}
                   onClick={() => addChat(user)}
@@ -325,7 +332,7 @@ const ChatLeft = () => {
                   <h1>No available Users</h1>
                 </div>
               )}
-            </Typography>
+            </div>
           </CardBody>
         </Card>
       </Dialog>
