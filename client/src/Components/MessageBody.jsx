@@ -28,7 +28,7 @@ const MessageBody = () => {
   const [message, setMessage] = useState("");
   const [hoverMessage, setHoverMessage] = useState(null);
   const [messageMenu, setMessageMenu] = useState(null);
-  
+
   const { setChats, getChats } = useGetChats();
 
   const { selectedChat, getChat, chat, setChat, readChat } =
@@ -84,6 +84,8 @@ const MessageBody = () => {
 
   useSocketEvents(socket, {
     onReceiveMessage: (data) => {
+      console.log('dt', data)
+      
       if (chat && chat.chat.id === data.chatId) {
         setChat((prev) => ({
           ...prev,
@@ -101,6 +103,28 @@ const MessageBody = () => {
     // markAsRead: (data) => {
     //   console.log("dt", data)
     // }
+    onUpdateStatus: (data) => {
+      
+      if(data.messageId.length < 1) return;
+      console.log("update status for sender", data);
+      setChat((prev) => ({
+        ...prev,
+        messages: prev?.messages.map((msg) => {
+          const isMatch = data.messageId.includes(msg.id);
+          
+          if (!isMatch) {
+            return msg;
+          }
+
+          const status = data.status;
+
+          return {
+            ...msg,
+            status,
+          };
+        }),
+      }));
+    },
   });
 
   useEffect(() => {
@@ -275,16 +299,6 @@ const MessageBody = () => {
           <div>
             {chat.messages ? (
               chat.messages.map((message, index) => {
-                const isSeen =
-                  selectedChat.receiver.id !== user.id &&
-                  message.readBy?.includes(selectedChat.receiver.id);
-
-                console.log(
-                  "Checking if message is seen by:",
-                  selectedChat.receiver.id
-                );
-                console.log("readBy array:", message.readBy, isSeen);
-
                 return (
                   <div
                     key={index}
@@ -342,11 +356,14 @@ const MessageBody = () => {
                           <small className="message-time">
                             {format(message.createdAt)}
                           </small>
+
                           {message.loading ? (
                             <IoMdTime />
                           ) : message.senderId === user.id ? (
-                            isSeen ? (
+                            message.status === "READ" ? (
                               <span className="text-blue-500">✓✓</span>
+                            ) : message.status === "DELIVERED" ? (
+                              <span>✓✓</span>
                             ) : (
                               <span>✓</span>
                             )

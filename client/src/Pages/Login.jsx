@@ -2,20 +2,18 @@ import { useContext, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoLogoApple } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { api } from "../utils/api.js";
 import AuthContext from "../context/AuthContext.jsx";
-import toast from "react-hot-toast";
 import { Typography } from "@material-tailwind/react";
 import InputComponent from "../Components/InputComponent.jsx";
 
 const Login = () => {
   const [showReg, setshowReg] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
-  const { updateUser } = useContext(AuthContext);
+  const { login, register, loading, error, setError } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -49,23 +47,16 @@ const Login = () => {
     if (!validateForm(formData)) {
       return;
     }
-    setLoading(true);
     const email = formData.get("email");
     const password = formData.get("password");
 
     try {
-      const response = await api.post("auth/register", {
-        email,
-        password,
-      });
-      updateUser(response.data);
+      const response = await register(email, password);
       if (response.status === 200) {
         navigate("/profile-setup");
       }
     } catch (error) {
-      setError(error.response.data.message || error.response.data[0]);
-    } finally {
-      setLoading(false);
+      console.log("error in signup", error);
     }
   };
   const handleLogin = async (e) => {
@@ -74,26 +65,12 @@ const Login = () => {
     if (!validateForm(formData)) {
       return;
     }
-    setLoading(true);
-    setError("");
     const email = formData.get("email");
     const password = formData.get("password");
     try {
-      const response = await api.post("auth/login", {
-        email,
-        password,
-      });
-      updateUser(response.data.user);
-
-      toast.success(`Welcome ${response.data.user.name}`);
-      if (response.status === 200) {
-        navigate("/chats");
-      }
+      await login(email, password);
     } catch (error) {
-      setError(error.response ? error.response.data.message : error.message);
-      console.log(error);
-    } finally {
-      setLoading(false);
+      console.log("login error", error);
     }
   };
 

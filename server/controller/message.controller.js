@@ -75,11 +75,33 @@ export const markAsRead = async (req, res) => {
     const promise = await Promise.all(readMessages);
     res.status(200).json({
       message: "Messages marked as read",
-      readMessages: promise.filter(Boolean)
+      readMessages: promise.filter(Boolean),
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server error", error });
+  }
+};
+
+export const updateStatus = async (req, res) => {
+  const { chatId } = req.params;
+  const { status, messageIds } = req.body;
+
+  try {
+    const updatedMessages = await prisma.message.updateMany({
+      where: {
+        chatId,
+        id: {
+          in: messageIds,
+        },
+      },
+      data: {
+        status,
+      },
+    });
+    res.status(200).json({ message: "Success", count: updatedMessages.count });
+  } catch (error) {
+    console.log("errror in upd", error);
   }
 };
 

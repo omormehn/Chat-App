@@ -21,6 +21,12 @@ enum MessageType {
   DOCUMENT
 }
 
+enum Status {
+  READ
+  SENT
+  DELIVERED
+}
+
 model User {
   id                          String    @id @default(auto()) @map("_id") @db.ObjectId
   name                        String
@@ -48,7 +54,7 @@ model Chat {
   users         User      @relation(fields: [userIds], references: [id])
   userIds       String[]  @db.ObjectId
   seenBy        String[]  @db.ObjectId
-  lastMessageId String?   @db.ObjectId 
+  lastMessageId String?   @db.ObjectId
   lastMessage   Message?  @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   messages      Message[] @relation("ChatMessages")
   createdAt     DateTime  @default(now())
@@ -62,8 +68,8 @@ model Message {
   chatId      String   @db.ObjectId
   chat        Chat     @relation("ChatMessages", fields: [chatId], references: [id])
   lastMessage Chat[]   @relation("LastMessage")
+  status      Status   @default(SENT)
   readBy      String[] @db.ObjectId
-  
 
   mediaUrl    String?
   messageType MessageType @default(TEXT)

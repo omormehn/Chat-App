@@ -14,6 +14,7 @@ const io = new Server({
 
 let onlineUser = [];
 let users = [];
+const userToSocket = {};
 
 const addUser = (userId, socketId) => {
   const userExits = onlineUser.find((user) => user.userId === userId);
@@ -31,6 +32,13 @@ const getUser = (userId) => {
 };
 
 io.on("connection", (socket) => {
+  console.log("conn", socket.id)
+  const userId = socket.handshake.query.userId;
+
+  if (userId) userToSocket[userId] = socket.id;
+
+  io.emit("getOnlineUsers", Object.keys(userToSocket));
+
   socket.on("newUser", (userId) => {
     addUser(userId, socket.id);
     io.emit("onlineUsers", onlineUser);
@@ -62,18 +70,19 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("markAsRead", (data) => {
-    const user = getUser(data.userId);
-    console.log(user)
+  socket.on("updateStatus", (data) => {
+    const receiver = getUser(data.userId);
+    const sender = getUser(data.senderId);
+    console.log("re", receiver);
+    console.log("se", sender);
 
-    if (user) {
-      io.to(user.socketId).emit("markAsRead", data);
-    }
+    if (sender) io.to(sender.socketId).emit("markStatus", data);
+    if (receiver) io.to(receiver.socketId).emit("markStatus", data);
   });
 
   socket.on("disconnect", () => {
-    removeUser(socket.id);
-    io.emit("onlineUsers", onlineUser);
+    delete userToSocket[userId];
+    io.emit("getOnlineUsers", Object.keys(userToSocket));
   });
 });
 
