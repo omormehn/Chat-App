@@ -216,8 +216,6 @@ const ChatLeft = () => {
         ) : (
           <div className="h-screen">
             {sortedChats.map((chat) => {
-              const time = dayjs(chat?.lastMessage?.createdAt).format("HH:mm");
-
               return (
                 <div
                   key={chat.id}
@@ -253,12 +251,15 @@ const ChatLeft = () => {
                     }}
                   >
                     <div>
-                      {new Date(chat?.lastMessage?.createdAt).toLocaleTimeString(
-                        [],
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
+                      {chat?.lastMessage && (
+                        <p>
+                          {new Date(
+                            chat?.lastMessage?.createdAt
+                          ).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
                       )}
                     </div>
                     {getUnreadCount(chat) > 0 && (
