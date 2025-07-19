@@ -10,7 +10,11 @@ function ProfilePage() {
   const navigate = useNavigate();
   const { user, updateUser } = useContext(AuthContext);
 
+
   const handleLogout = async () => {
+    await api.post("update-profile/", {
+      lastSeen: new Date(Date.now()),
+    });
     await api.post("auth/logout");
     updateUser(null);
     navigate("/login");

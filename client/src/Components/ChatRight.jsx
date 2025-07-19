@@ -5,27 +5,26 @@ import { format } from "timeago.js";
 import { useMediaQuery } from "react-responsive";
 import ChatContext from "../context/ChatContext";
 import MessageBody from "./MessageBody";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import AuthContext from "../context/AuthContext";
 import SocketContext from "../context/SocketContext";
-
 
 const ChatRight = () => {
   const isDesktop = useMediaQuery({ query: "(min-width: 768px)" });
   const { selectedChat, setSelectedChat } = useContext(ChatContext);
-  const { user } = useContext(AuthContext);
-  const { onlineUsers } = useContext(SocketContext);
+  const { user, updateUser } = useContext(AuthContext);
+  const { onlineUsers, socket } = useContext(SocketContext);
 
-  const onlineStatus = () => {
-    const isReceiverOnline = null;
-    if (onlineUsers && selectedChat) {
-      const isReceiverOnline = onlineUsers.some(
-        (user) => user.userId === selectedChat.receiver.id
-      );
-      return isReceiverOnline;
-    }
-    return isReceiverOnline;
-  };
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("getOnlineUsers", (onlineUsers) => {
+      console.log("onl", onlineUsers);
+      const id = user.id;
+      if (!onlineUsers.includes(id)) {
+        updateUser((prev) => ({ ...prev, lastSeen: new Date(Date.now()) }));
+      }
+    });
+  }, [socket, onlineUsers, user, updateUser]);
 
   return (
     selectedChat && (
@@ -43,13 +42,15 @@ const ChatRight = () => {
                     />
                     <div>
                       <h1 className=" text-lg">{selectedChat.receiver.name}</h1>
-                      <p>
-                        {onlineStatus ? (
+                      <div>
+                        {onlineUsers.includes(selectedChat.receiver.id) ? (
                           "Online"
                         ) : (
-                          <div>last seen {format(selectedChat.receiver.lastSeen)}</div>
+                          <div>
+                            last seen {format(selectedChat.receiver.lastSeen)}
+                          </div>
                         )}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>

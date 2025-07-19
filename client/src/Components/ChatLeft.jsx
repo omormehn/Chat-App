@@ -18,13 +18,8 @@ import { format } from "timeago.js";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
-  const {
-    selectedChat,
-    setSelectedChat,
-    getChat,
-    setSelectedChatId,
-    readMessage,
-  } = useContext(ChatContext);
+  const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
+    useContext(ChatContext);
   const { user } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
   const { chats, setChats, loading, getChats } = useGetChats();
@@ -48,8 +43,13 @@ const ChatLeft = () => {
   }, [selectedChat]);
 
   useSocketEvents(socket, {
-    onReceiveMessage: (data) => {
+    onReceiveMessage: async (data) => {
+      console.log("data", data);
       try {
+        await api.post(`/messages/add/update/${data.chatId}`, {
+          messageId: [data.id],
+          status: "DELIVERED",
+        });
         setChats((prevChats) =>
           prevChats.map((chat) => {
             if (chat.id === data.chatId) {
@@ -62,11 +62,17 @@ const ChatLeft = () => {
             return chat;
           })
         );
+
+        socket.emit("updateStatus", {
+          messageId: [data.id],
+          userId: user.id,
+          senderId: data.senderId,
+          status: "DELIVERED",
+        });
       } catch (error) {
-        throw new error();
+        console.log("error", error);
       }
     },
-
     onNewChat: (chat) => {
       setChats((prev) => [...prev, chat]);
     },
@@ -100,10 +106,6 @@ const ChatLeft = () => {
     );
   });
 
-  // useEffect(() => {
-  //   handleChatClick()
-  // })
-
   const handleChatClick = async (chat) => {
     if (chat.id === selectedChat?.id) return;
 
@@ -113,7 +115,6 @@ const ChatLeft = () => {
         seenBy: [...chat.seenBy, user.id],
       });
     } else {
-      console.log("else")
       setSelectedChat(chat);
     }
 
@@ -121,7 +122,20 @@ const ChatLeft = () => {
     getChat(chat.id);
 
     try {
-      await readMessage(chat.id);
+      console.log(chat);
+      // const read = await readMessage(chat.id);
+      await api.post(`/messages/add/update/${chat.id}`, {
+        messageId: [chat?.lastMessage.id],
+        status: "READ",
+      });
+
+      console.log(socket);
+      socket.emit("updateStatus", {
+        messageId: chat?.lastMessage.id,
+        userId: user.id,
+        senderId: chat?.lastMessage.senderId,
+        status: "READ",
+      });
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
     }
@@ -220,7 +234,7 @@ const ChatLeft = () => {
                       <h1 className="font-bold text-lg">
                         {chat.receiver?.name}
                       </h1>
-                      <div className="w-44 overflow-hidden  ">
+                      <div className="flex gap-4 overflow-hidden flex-row  ">
                         <p className="font-light  truncate ">
                           {chat.lastMessage?.content}
                         </p>
