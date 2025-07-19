@@ -129,8 +129,7 @@ input {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-  padding: 20px;
+
 }
 
 /* Intro Section */
@@ -169,9 +168,10 @@ input {
 .profile-form input,
 textarea {
   background-color: transparent;
-  border-top: none;
-  border-left: none;
-  border-bottom: 3px solid;
+  padding-block: 10px;
+  padding-inline: 5px;
+  border: 2px solid #000 ;
+  border-radius: 5px;
   flex: 1;
 }
 

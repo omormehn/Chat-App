@@ -26,22 +26,22 @@ const CompleteProfile = () => {
         avatar,
       });
       updateUser(res.data);
-      toast.success("You are all set!")
-      navigate('/chats')
+      toast.success("You are all set!");
+      navigate("/chats");
     } catch (error) {
       setError(error.response.data);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container">
+    <div className="container w-full">
       {/* Intro Message */}
       <div className="intro-section">
-        <h1 className="greeting typewrite">Hey there 👋</h1>
-        <p className="welcome-message typewrite">Welcome to Chat App</p>
-        <p className="text-sm md:text-base typewriter">
+        <h1 className="greeting ">Hey there 👋</h1>
+        <p className="welcome-message ">Welcome to Chat App</p>
+        <p className="text-sm md:text-base ">
           Few more things to fill up and you are good to go
         </p>
       </div>
@@ -59,14 +59,18 @@ const CompleteProfile = () => {
         </label>
         <label className="flex items-center gap-5 ">
           Bio:
-          <textarea
-            required
-            className="ml-4"
-            type="textarea"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder=""
-          />
+          <div className="flexCol w-full  ">
+            <textarea
+              required
+              className="ml-4"
+              type="textarea"
+              maxLength={250}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder=""
+            />
+            <small className="pt-5 text-end">Max Length 250</small>
+          </div>
         </label>
         <p className="text-red-500 text-sm">{error.message}</p>
         <button type="submit">
