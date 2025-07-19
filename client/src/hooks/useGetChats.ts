@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 
 import { api } from "../utils/api";
+import { Chat } from "../../types/types";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 const useGetChats = () => {
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [chats, setChats] = useState<Chat[]>([]);
 
 
 
@@ -16,9 +18,9 @@ const useGetChats = () => {
       const response = await api.get("chats/get-chats");
       setChats(response.data.chats);
       return response.data.chats;
-    } catch (error) {
+    } catch (error: any) {
       setError(error);
-      throw new Error(error);
+      handleAxiosError(error, "get chats in get chats hook")
     } finally {
       setLoading(false);
     }

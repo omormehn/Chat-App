@@ -1,26 +1,24 @@
 /* eslint-disable no-unused-vars */
-import { useContext, useState } from "react";
-import defaultAvatar from "../avatar.svg";
-import AuthContext from "../context/AuthContext";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
 import { toast } from "react-hot-toast";
 import UploadWidget from "../utils/UploadWidget";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 function UpdateProfile() {
-  const { user, updateUser } = useContext(AuthContext);
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [avatar, setAvatar] = useState(null);
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [bio, setBio] = useState(user.bio);
+  const [name, setName] = useState(user?.name);
+  const [email, setEmail] = useState(user?.email);
+  const [bio, setBio] = useState(user?.bio);
 
-  const handleSubmit = async (e) => {
-  
-  
+  const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
 
@@ -28,7 +26,7 @@ function UpdateProfile() {
       const response = await api.post("update-profile/", {
         name,
         email,
-        avatar, 
+        avatar,
         bio
       });
 
@@ -37,13 +35,13 @@ function UpdateProfile() {
       navigate("/profile");
     } catch (error) {
       toast.error("Error updating Profile!");
-      throw new Error(error);
+      handleAxiosError(error, "update profile")
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteImage = async (e) => {};
+  // const handleDeleteImage = async (e) => { };
 
   return (
     <div>
@@ -69,11 +67,11 @@ function UpdateProfile() {
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
               >
-              <img
-                src={avatar || user.avatar || "image.png"}
-                alt="Default Avatar"
-                className="rounded-full size-24"
-              />
+                <img
+                  src={avatar || user?.avatar || "image.png"}
+                  alt="Default Avatar"
+                  className="rounded-full size-24"
+                />
 
                 {hovered && (
                   <div className="absolute inset-0 top-2 left-0 flex justify-center items-center cursor-pointer ">
@@ -100,7 +98,7 @@ function UpdateProfile() {
                     type="text"
                     name="name"
                     onChange={(e) => setName(e.target.value)}
-                    defaultValue={user.name}
+                    defaultValue={user?.name}
                     className="border-0 w-full"
                     required
                   />
@@ -114,7 +112,7 @@ function UpdateProfile() {
                     type="text"
                     name="email"
                     onChange={(e) => setEmail(e.target.value)}
-                    defaultValue={user.email}
+                    defaultValue={user?.email}
                     required
                     className="border-0 w-full"
                   />
@@ -126,7 +124,7 @@ function UpdateProfile() {
                   <input
                     type="text"
                     name="bio"
-                    defaultValue={user.bio}
+                    defaultValue={user?.bio}
                     onChange={(e) => setBio(e.target.value)}
                     required
                     className="border-0 w-full"

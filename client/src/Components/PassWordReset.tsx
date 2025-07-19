@@ -1,23 +1,24 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
 
 import { api } from "../utils/api";
 import toast from "react-hot-toast";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 // Component for reset from login=> resetPass=> this
 const PassWordReset = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
 
   const navigate = useNavigate();
   const location = useLocation();
   const { email } = location.state || {};
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setError("Password Does not match");
@@ -34,7 +35,9 @@ const PassWordReset = () => {
       toast.success("Password Changed successfully!");
     } catch (error) {
       toast.error("Password Change failed!");
-      setError(error.response.data.message);
+      const message = handleAxiosError(error, "password, reset")
+      setError(message);
+
     }
   };
   return (

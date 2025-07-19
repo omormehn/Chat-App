@@ -3,28 +3,32 @@ import { GoArrowLeft } from "react-icons/go";
 
 import { format } from "timeago.js";
 import { useMediaQuery } from "react-responsive";
-import ChatContext from "../context/ChatContext";
-import MessageBody from "./MessageBodytjsx";
-import { useContext, useEffect } from "react";
-import AuthContext from "../context/AuthContext";
-import SocketContext from "../context/SocketContext";
+import { chatContext } from "../context/ChatContext";
+import { useEffect } from "react";
+import  { useAuth } from "../context/AuthContext";
+import { getSocket } from "../context/SocketContext";
+import MessageBody from "./MessageBody";
+
 
 const ChatRight = () => {
   const isDesktop = useMediaQuery({ query: "(min-width: 768px)" });
-  const { selectedChat, setSelectedChat } = useContext(ChatContext);
-  const { user, updateUser } = useContext(AuthContext);
-  const { onlineUsers, socket } = useContext(SocketContext);
+  const { user, setUser } = useAuth();
+  const { selectedChat, setSelectedChat } = chatContext();
+  const { onlineUsers, socket } = getSocket();
 
   useEffect(() => {
     if (!socket) return;
+
     socket.on("getOnlineUsers", (onlineUsers) => {
-      console.log("onl", onlineUsers);
-      const id = user.id;
+      const id = user?.id;
       if (!onlineUsers.includes(id)) {
-        updateUser((prev) => ({ ...prev, lastSeen: new Date(Date.now()) }));
+        setUser((prev) => {
+          if (!prev) return prev;
+          return { ...prev, lastSeen: new Date() }
+        });
       }
     });
-  }, [socket, onlineUsers, user, updateUser]);
+  }, [socket, onlineUsers, user, setUser]);
 
   return (
     selectedChat && (
@@ -36,18 +40,18 @@ const ChatRight = () => {
                 <div className="bg-[#94A3B8] px-6 z-50 top py-3 flex justify-between items-center fixed">
                   <div className="flex flex-row z-50 items-center gap-4 cursor-pointer hover:bg-slate-500 py-2 px-4">
                     <img
-                      src={selectedChat.receiver.avatar || "image.png"}
+                      src={selectedChat.receiver?.avatar || "image.png"}
                       className="size-12 rounded-full"
                       alt=""
                     />
                     <div>
-                      <h1 className=" text-lg">{selectedChat.receiver.name}</h1>
+                      <h1 className=" text-lg">{selectedChat.receiver?.name}</h1>
                       <div>
-                        {onlineUsers.includes(selectedChat.receiver.id) ? (
+                        {onlineUsers.includes(selectedChat.receiver?.id) ? (
                           "Online"
                         ) : (
                           <div>
-                            last seen {format(selectedChat.receiver.lastSeen)}
+                            last seen {format(selectedChat.receiver?.lastSeen!)}
                           </div>
                         )}
                       </div>
@@ -83,8 +87,8 @@ const ChatRight = () => {
                         <GoArrowLeft />
                       </div>
                       <div>
-                        <h1>{selectedChat.receiver.name}</h1>
-                        <p>{format(user.lastSeen)}</p>
+                        <h1>{selectedChat.receiver?.name}</h1>
+                        <p>{format(user?.lastSeen!)}</p>
                       </div>
                     </div>
                     <div>

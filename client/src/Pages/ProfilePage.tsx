@@ -1,5 +1,5 @@
-import { useContext } from "react";
-import AuthContext from "../context/AuthContext";
+
+import { useAuth } from "../context/AuthContext";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import { TiEdit } from "react-icons/ti";
@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const { user, updateUser } = useContext(AuthContext);
+  const { user, setUser } = useAuth();
 
 
   const handleLogout = async () => {
@@ -16,7 +16,7 @@ function ProfilePage() {
       lastSeen: new Date(Date.now()),
     });
     await api.post("auth/logout");
-    updateUser(null);
+    setUser(null);
     navigate("/login");
     toast.success("Logout successful");
   };
@@ -48,17 +48,17 @@ function ProfilePage() {
             </div>
             <div className="avatar relative ">
               <img
-                src={user.avatar || "image.png"}
+                src={user?.avatar || "image.png"}
                 alt="Default Avatar"
                 className="rounded-full size-24"
               />
             </div>
             <div className="m-3 flex flex-col  items-center ">
-              <h1 className="font-bold font-mono text-xl ">{user.name}</h1>
-              <p>{user.email}</p>
+              <h1 className="font-bold font-mono text-xl ">{user?.name}</h1>
+              <p>{user?.email}</p>
             </div>
             <div className="text-sm text-center font-bold">
-              <p>{user.bio}</p>
+              <p>{user?.bio}</p>
             </div>
           </div>
           <div className="flexCenter flex-col  gap-2">

@@ -25,4 +25,6 @@ dist-ssr
 
 
 .env.local
+
 package-lock.json
+vite-env.d.ts

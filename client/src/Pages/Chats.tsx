@@ -1,19 +1,19 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import ChatLeft from "../Components/ChatLeft";
 import ChatRight from "../Components/ChatRight";
-import Footer from "../Components/Footer";
-import AuthContext from "../context/AuthContext";
+import Footer from "../Components/Footer.tsx";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Chats = () => {
-  const { user } = useContext(AuthContext)
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user.name) {
+    if (!user?.name) {
       navigate('/profile-setup')
     }
-  })
+  }, [user])
 
   return (
     // Parent container

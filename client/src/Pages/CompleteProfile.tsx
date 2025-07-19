@@ -2,34 +2,34 @@
 import { useState } from "react";
 import { api } from "../utils/api";
 import { useContext } from "react";
-import AuthContext from "../context/AuthContext";
+import AuthContext, { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 const CompleteProfile = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
-  const [avatar, setAvatar] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { updateUser } = useContext(AuthContext);
+  const { updateUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
     try {
       const res = await api.post("auth/profile-setup", {
         name,
         bio,
-        avatar,
       });
       updateUser(res.data);
       toast.success("You are all set!");
       navigate("/chats");
     } catch (error) {
-      setError(error.response.data);
+      const message = handleAxiosError(error, "complete profile ")
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,6 @@ const CompleteProfile = () => {
             <textarea
               required
               className="ml-4"
-              type="textarea"
               maxLength={250}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -72,7 +71,7 @@ const CompleteProfile = () => {
             <small className="pt-5 text-end">Max Length 250</small>
           </div>
         </label>
-        <p className="text-red-500 text-sm">{error.message}</p>
+        <p className="text-red-500 text-sm">{error}</p>
         <button type="submit">
           {loading ? (
             <div className="dots">

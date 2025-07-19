@@ -12,44 +12,25 @@ const io = new Server({
   },
 });
 
-let onlineUser = [];
-let users = [];
 const userToSocket = {};
 
-const addUser = (userId, socketId) => {
-  const userExits = onlineUser.find((user) => user.userId === userId);
-  if (!userExits) {
-    onlineUser.push({ userId, socketId });
-  }
-};
-
-const removeUser = (socketId) => {
-  onlineUser = onlineUser.filter((user) => user.socketId !== socketId);
-};
-
 const getUser = (userId) => {
-  return onlineUser.find((user) => user.userId === userId);
+  return userToSocket[userId];
 };
 
 io.on("connection", (socket) => {
-  console.log("conn", socket.id)
   const userId = socket.handshake.query.userId;
 
   if (userId) userToSocket[userId] = socket.id;
 
   io.emit("getOnlineUsers", Object.keys(userToSocket));
 
-  socket.on("newUser", (userId) => {
-    addUser(userId, socket.id);
-    io.emit("onlineUsers", onlineUser);
-  });
-
   // create a 'sendMessage' event to send a message to a specific user
   socket.on("sendMessage", ({ data, receiverId }) => {
     const receiver = getUser(receiverId);
     // we are emitting a 'receiveMessage' event to notify the receiver that a message was sent
     if (receiver) {
-      io.to(receiver.socketId).emit("receiveMessage", data);
+      io.to(receiver).emit("receiveMessage", data);
     }
   });
 
@@ -58,7 +39,7 @@ io.on("connection", (socket) => {
     const receiver = getUser(receiverId);
 
     if (receiver) {
-      io.to(receiver.socketId).emit("newChat", chat);
+      io.to(receiver).emit("newChat", chat);
     }
   });
 
@@ -66,18 +47,29 @@ io.on("connection", (socket) => {
     const user = getUser(userId);
 
     if (user) {
-      io.to(user.socketId).emit("updateMessage", chat);
+      io.to(user).emit("updateMessage", chat);
     }
   });
 
   socket.on("updateStatus", (data) => {
+    const { senderId, userId, ...rest } = data;
     const receiver = getUser(data.userId);
     const sender = getUser(data.senderId);
-    console.log("re", receiver);
-    console.log("se", sender);
 
-    if (sender) io.to(sender.socketId).emit("markStatus", data);
-    if (receiver) io.to(receiver.socketId).emit("markStatus", data);
+    if (sender) {
+      io.to(sender).emit("markStatus", {
+        ...rest,
+        userId,
+        status: data.status,
+      });
+    }
+    if (receiver) {
+      io.to(receiver).emit("markStatus", {
+        ...rest,
+        userId,
+        status: data.status,
+      });
+    }
   });
 
   socket.on("disconnect", () => {

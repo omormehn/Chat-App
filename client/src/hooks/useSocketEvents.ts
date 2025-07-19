@@ -1,11 +1,12 @@
 import { useContext, useEffect } from "react";
-import AuthContext from "../context/AuthContext";
+import AuthContext, { useAuth } from "../context/AuthContext";
+import { Socket } from 'socket.io-client';
+import { SocketEventHandlers } from '../../types/types';
 
-export const useSocketEvents = (
-  socket,
-  { onReceiveMessage, onNewChat, onUpdateMessage, markAsRead, onUpdateStatus }
-) => {
-  const { user } = useContext(AuthContext);
+
+
+const useSocketEvents = (socket: Socket | null, { onReceiveMessage, onNewChat, onUpdateMessage, markAsRead, onUpdateStatus } : SocketEventHandlers) => {
+  const { user } = useAuth();
   
   useEffect(() => {
     if (!socket || !user) return;
@@ -52,3 +53,6 @@ export const useSocketEvents = (
     user
   ]);
 };
+
+
+export default useSocketEvents;

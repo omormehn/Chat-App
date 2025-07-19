@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <div className="flexCenter h-dvh w-full">
       <div className="absolute bottom-0 bg-white">
-        <p>@copyright Omormehn 2024.</p>
+        <p>@copyright Omormehn 2025.</p>
       </div>
     </div>
   );

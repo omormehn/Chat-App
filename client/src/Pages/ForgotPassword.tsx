@@ -1,20 +1,21 @@
 import { useContext, useState } from "react";
 import { api } from "../utils/api";
-import AuthContext from "../context/AuthContext";
+import AuthContext, { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
+import { handleAxiosError } from "../utils/handleAxiosError";
 
 
 const ForgotPassword = () => {
-  const { user, updateUser } = useContext(AuthContext);
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setError("Password Does not match")
@@ -25,7 +26,7 @@ const ForgotPassword = () => {
       const response = await api.post("/auth/forgotPassword", {
         password: oldPassword,
         newPass: newPassword,
-        email: user.email,
+        email: user?.email,
       });
       if (user) {
         updateUser(response.data.user);
@@ -35,7 +36,8 @@ const ForgotPassword = () => {
       toast.success("Password updated successfully!");
     } catch (error) {
       toast.error("Password update failed!");
-      setError(error.response.data.message)
+      const message = handleAxiosError(error, "update password")
+      setError(message)
     }
   };
 
