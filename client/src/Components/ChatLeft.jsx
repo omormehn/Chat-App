@@ -294,7 +294,7 @@ const ChatLeft = () => {
                 >
                   {/* User Avatar */}
                   <img
-                    src={user.avatar ? user.avatar : defaultAvatar}
+                    src={user.avatar ? user.avatar : "image.png"}
                     alt="User Avatar"
                     className="w-10 h-10 rounded-full"
                   />
