@@ -109,6 +109,7 @@ const ChatLeft = () => {
 
   const handleChatClick = async (chat) => {
     if (chat?.id === selectedChat?.id) return;
+    if(!chat) return;
 
     if (!chat?.seenBy?.includes(user.id)) {
       setSelectedChat({
@@ -126,15 +127,15 @@ const ChatLeft = () => {
       
       // const read = await readMessage(chat.id);
       await api.post(`/messages/add/update/${chat?.id}`, {
-        messageId: [chat?.lastMessage.id],
+        messageId: [chat?.lastMessage?.id],
         status: "READ",
       });
 
 
       socket.emit("updateStatus", {
-        messageId: chat?.lastMessage.id,
+        messageId: chat?.lastMessage?.id,
         userId: user?.id,
-        senderId: chat?.lastMessage.senderId,
+        senderId: chat?.lastMessage?.senderId,
         status: "READ",
       });
     } catch (error) {
