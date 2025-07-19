@@ -36,7 +36,7 @@ const ChatRight = () => {
                 <div className="bg-[#94A3B8] px-6 z-50 top py-3 flex justify-between items-center fixed">
                   <div className="flex flex-row z-50 items-center gap-4 cursor-pointer hover:bg-slate-500 py-2 px-4">
                     <img
-                      src={selectedChat.receiver.avatar}
+                      src={selectedChat.receiver.avatar || "image.png"}
                       className="size-12 rounded-full"
                       alt=""
                     />

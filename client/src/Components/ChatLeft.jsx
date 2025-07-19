@@ -111,7 +111,7 @@ const ChatLeft = () => {
     if (chat?.id === selectedChat?.id) return;
     if(!chat) return;
 
-    if (!chat?.seenBy?.includes(user.id)) {
+    if (!chat?.seenBy?.includes(user?.id)) {
       setSelectedChat({
         ...chat,
         seenBy: [...chat.seenBy, user.id],
