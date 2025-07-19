@@ -15,6 +15,7 @@ import { api } from "../utils/api";
 import toast from "react-hot-toast";
 import { useSocketEvents } from "../hooks/useSocketEvents";
 import { format } from "timeago.js";
+import dayjs from "dayjs";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
@@ -215,6 +216,8 @@ const ChatLeft = () => {
         ) : (
           <div className="h-screen">
             {sortedChats.map((chat) => {
+              const time = dayjs(chat.lastMessage.createdAt).format("HH:mm");
+
               return (
                 <div
                   key={chat.id}
@@ -226,7 +229,7 @@ const ChatLeft = () => {
                   <div className="flex gap-4">
                     {/* Profile Picture */}
                     <img
-                      src={chat.receiver?.avatar || defaultAvatar}
+                      src={chat.receiver?.avatar || "image.png"}
                       className="size-12 rounded-full"
                     ></img>
                     {/* Chat Info */}
@@ -250,7 +253,13 @@ const ChatLeft = () => {
                     }}
                   >
                     <div>
-                      <p>{format(chat.lastMessage?.createdAt)}</p>
+                      {new Date(chat?.lastMessage.createdAt).toLocaleTimeString(
+                        [],
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </div>
                     {getUnreadCount(chat) > 0 && (
                       <div className="bg-red-500 text-white text-xs flex items-center justify-center h-5 w-5 rounded-full">
