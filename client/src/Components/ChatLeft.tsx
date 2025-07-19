@@ -2,9 +2,8 @@
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PuffLoader } from "react-spinners";
-import defaultAvatar from "/src/avatar.svg";
 import AuthContext from "../context/AuthContext";
 import ChatContext from "../context/ChatContext";
 import useGetChats from "../hooks/useGetChats";

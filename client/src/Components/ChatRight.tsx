@@ -4,7 +4,7 @@ import { GoArrowLeft } from "react-icons/go";
 import { format } from "timeago.js";
 import { useMediaQuery } from "react-responsive";
 import ChatContext from "../context/ChatContext";
-import MessageBody from "./MessageBody";
+import MessageBody from "./MessageBodytjsx";
 import { useContext, useEffect } from "react";
 import AuthContext from "../context/AuthContext";
 import SocketContext from "../context/SocketContext";

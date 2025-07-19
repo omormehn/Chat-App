@@ -2,9 +2,9 @@ import { useContext, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoLogoApple } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../context/AuthContext.jsx";
+import AuthContext from "../context/AuthContext.js";
 import { Typography } from "@material-tailwind/react";
-import InputComponent from "../Components/InputComponent.jsx";
+import InputComponent from "../Components/InputComponent.js";
 
 const Login = () => {
   const [showReg, setshowReg] = useState(false);
