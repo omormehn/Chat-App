@@ -50,11 +50,17 @@ const ChatLeft = () => {
 
       console.log("still running")
 
-      const res = await api.post(`/messages/add/update/${data.chatId}`, {
-        messageId: [data.id],
-        status: "DELIVERED",
-      });
-      console.log("res", res)
+      try {
+        console.log("trying")
+        const res = await api.post(`/messages/add/update/${data.chatId}`, {
+          messageId: [data.id],
+          status: "DELIVERED",
+        });
+        console.log("res", res)
+
+      } catch (error) {
+        console.log("err", error)
+      }
 
       console.log("still running")
       setChats((prevChats) => {
@@ -83,7 +89,7 @@ const ChatLeft = () => {
       });
 
     },
-    onNewChat: (chat: Chat) => { 
+    onNewChat: (chat: Chat) => {
       setChats((prev) => [...prev, chat]);
     },
 
