@@ -46,12 +46,15 @@ const ChatLeft = () => {
 
   useSocketEvents(socket, {
     onReceiveMessage: async (data: Message) => {
-      
+      console.log("data in receive message", data);
       try {
-        await api.post(`/messages/add/update/${data.chatId}`, {
+        const res = await api.post(`/messages/add/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
         });
+        console.log("res", res)
+
+        console.log("still running")
         setChats((prevChats) => {
           const updatedChat = prevChats.map((chat) => {
             if (chat.id === data.chatId) {
