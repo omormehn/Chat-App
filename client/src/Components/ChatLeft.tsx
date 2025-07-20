@@ -50,11 +50,11 @@ const ChatLeft = () => {
 
       console.log("still running")
 
-      // const res = await api.post(`/messages/add/update/${data.chatId}`, {
-      //   messageId: [data.id],
-      //   status: "DELIVERED",
-      // });
-      // console.log("res", res)
+      const res = await api.post(`/messages/add/update/${data.chatId}`, {
+        messageId: [data.id],
+        status: "DELIVERED",
+      });
+      console.log("res", res)
 
       console.log("still running")
       setChats((prevChats) => {
