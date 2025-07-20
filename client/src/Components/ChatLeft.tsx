@@ -47,6 +47,8 @@ const ChatLeft = () => {
   useSocketEvents(socket, {
     onReceiveMessage: async (data: Message) => {
       console.log("data in receive message", data);
+      console.log("Base URL:", import.meta.env.VITE_API_BASE_URL);
+
 
       console.log("still running")
 
