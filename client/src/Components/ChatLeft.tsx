@@ -47,38 +47,38 @@ const ChatLeft = () => {
   useSocketEvents(socket, {
     onReceiveMessage: async (data: Message) => {
       console.log("data in receive message", data);
-      try {
-        const res = await api.post(`/messages/add/update/${data.chatId}`, {
-          messageId: [data.id],
-          status: "DELIVERED",
-        });
-        console.log("res", res)
 
-        console.log("still running")
-        setChats((prevChats) => {
-          const updatedChat = prevChats.map((chat) => {
-            if (chat.id === data.chatId) {
-              return {
-                ...chat,
-                lastMessage: data,
-                updatedAt: new Date().toISOString(),
-              };
-            }
-            return chat;
-          })
-          return updatedChat;
-        }
-        );
+      console.log("still running")
 
-        socket?.emit("updateStatus", {
-          messageId: [data.id],
-          userId: user?.id,
-          senderId: data.senderId,
-          status: "DELIVERED",
-        });
-      } catch (error) {
-        console.log("error", error);
+      const res = await api.post(`/messages/add/update/${data.chatId}`, {
+        messageId: [data.id],
+        status: "DELIVERED",
+      });
+      console.log("res", res)
+
+      console.log("still running")
+      setChats((prevChats) => {
+        const updatedChat = prevChats.map((chat) => {
+          if (chat.id === data.chatId) {
+            return {
+              ...chat,
+              lastMessage: data,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return chat;
+        })
+        return updatedChat;
       }
+      );
+
+      socket?.emit("updateStatus", {
+        messageId: [data.id],
+        userId: user?.id,
+        senderId: data.senderId,
+        status: "DELIVERED",
+      });
+
     },
     onNewChat: (chat: Chat) => {
       setChats((prev) => [...prev, chat]);
