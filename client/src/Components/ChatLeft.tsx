@@ -58,8 +58,10 @@ const ChatLeft = () => {
 
       console.log("still running")
       setChats((prevChats) => {
+        console.log("prev before", prevChats)
         const updatedChat = prevChats.map((chat) => {
           if (chat.id === data.chatId) {
+            console.log("true")
             return {
               ...chat,
               lastMessage: data,
@@ -68,6 +70,7 @@ const ChatLeft = () => {
           }
           return chat;
         })
+        console.log("uod", updatedChat)
         return updatedChat;
       }
       );
