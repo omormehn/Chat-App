@@ -2,12 +2,12 @@
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { PuffLoader } from "react-spinners";
-import AuthContext, { useAuth } from "../context/AuthContext";
-import ChatContext, { chatContext } from "../context/ChatContext";
+import { useAuth } from "../context/AuthContext";
+import { chatContext } from "../context/ChatContext";
 import useGetChats from "../hooks/useGetChats";
-import SocketContext, { getSocket } from "../context/SocketContext";
+import { getSocket } from "../context/SocketContext";
 import { Dialog, Card, Typography, CardBody, } from "@material-tailwind/react";
 import useGetUsers from "../hooks/useGetUsers";
 import { api } from "../utils/api";
@@ -46,14 +46,14 @@ const ChatLeft = () => {
 
   useSocketEvents(socket, {
     onReceiveMessage: async (data: Message) => {
-      console.log("data", data);
+      console.log("data in receive message", data);
       try {
         await api.post(`/messages/add/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
         });
-        
-        
+
+
         setChats((prevChats) =>
           prevChats.map((chat) => {
             if (chat.id === data.chatId) {
@@ -82,8 +82,12 @@ const ChatLeft = () => {
     },
 
     onUpdateMessage: (updatedChat: Chat) => {
+      console.log("updated chat", updatedChat)
       const updateChats = (prevChats: Chat[], newChat: Chat, userId: string) => {
+        console.log("new chat", newChat)
         const isChat = newChat?.userIds?.includes(userId);
+        console.log("is chat", isChat)
+
         if (!isChat) return prevChats;
 
         return prevChats.map((chat) =>
