@@ -17,6 +17,7 @@ import { format } from "timeago.js";
 import dayjs from "dayjs";
 import { Chat, Message, User } from "../../types/types";
 import { handleAxiosError } from "../utils/handleAxiosError";
+import axios from "axios";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const ChatLeft = () => {
 
       try {
         console.log("trying")
-        const res = await api.post(`http://localhost:5000/messages/add/update/${data.chatId}`, {
+        const res = await axios.post(`https://chat-app-server-fd68.onrender.com/messages/add/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
         });
