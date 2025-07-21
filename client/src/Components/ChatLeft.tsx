@@ -54,7 +54,7 @@ const ChatLeft = () => {
 
       try {
         console.log("trying")
-        const res = await api.post(`/messages/add/update/${data.chatId}`, {
+        const res = await api.post(`http://localhost:5000/messages/add/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
         });
