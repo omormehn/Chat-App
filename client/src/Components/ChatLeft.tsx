@@ -55,10 +55,10 @@ const ChatLeft = () => {
 
       try {
         console.log("trying")
-        const res = await axios.post(`https://chat-app-server-fd68.onrender.com/messages/add/update/${data.chatId}`, {
+        const res = await api.post(`/messages/add/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
-        });
+        });    
         console.log("res", res)
 
       } catch (error) {
