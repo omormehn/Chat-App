@@ -147,7 +147,7 @@ export const deleteMessage = async (req, res) => {
 
     res.status(200).json({
       message: "Message deleted successfully",
-      lastMessage: remainingMessages[0].content,
+      lastMessage: remainingMessages[0],
     });
 
     await prisma.chat.update({

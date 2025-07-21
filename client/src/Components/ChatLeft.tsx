@@ -10,7 +10,7 @@ import useGetChats from "../hooks/useGetChats";
 import { getSocket } from "../context/SocketContext";
 import { Dialog, Card, Typography, CardBody, } from "@material-tailwind/react";
 import useGetUsers from "../hooks/useGetUsers";
-import { api } from "../utils/api";
+import { api } from "../utils/api.ts";
 import toast from "react-hot-toast";
 import useSocketEvents from "../hooks/useSocketEvents";
 import { format } from "timeago.js";
@@ -55,7 +55,7 @@ const ChatLeft = () => {
 
       try {
         console.log("trying")
-        const res = await api.post(`/messages/add/update/${data.chatId}`, {
+        const res = await api.post(`/messages/update/${data.chatId}`, {
           messageId: [data.id],
           status: "DELIVERED",
         });    
