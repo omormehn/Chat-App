@@ -13,7 +13,7 @@ function UpdateProfile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [avatar, setAvatar] = useState<string>(user?.avatar || "image.png");
   const [name, setName] = useState(user?.name);
   const [email, setEmail] = useState(user?.email);
   const [bio, setBio] = useState(user?.bio);
@@ -21,12 +21,11 @@ function UpdateProfile() {
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
-
     try {
       const response = await api.post("update-profile/", {
         name,
         email,
-        avatar,
+        avatar: avatar !== "image.png" ? avatar : undefined,
         bio
       });
 
@@ -40,6 +39,7 @@ function UpdateProfile() {
       setLoading(false);
     }
   };
+
 
   // const handleDeleteImage = async (e) => { };
 
@@ -68,7 +68,7 @@ function UpdateProfile() {
                 onMouseLeave={() => setHovered(false)}
               >
                 <img
-                  src={avatar || user?.avatar || "image.png"}
+                  src={avatar}
                   alt="Default Avatar"
                   className="rounded-full size-24"
                 />

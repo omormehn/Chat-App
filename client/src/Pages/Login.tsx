@@ -38,17 +38,20 @@ const Login = () => {
         newErrors.confirmPassword = "Password does not match";
       }
     }
-    setErrors(newErrors); 
+    setErrors(newErrors);
     const hasErrors = Object.values(newErrors).some((val) => val !== "");
     return !hasErrors;
   };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({ email: "", password: "", confirmPassword: "" })
+    setError("")
     const formData = new FormData(e.target as HTMLFormElement);
     if (!validateForm(formData)) {
       return;
     }
+
 
     try {
       await register(email, password);
@@ -71,6 +74,7 @@ const Login = () => {
   };
 
   const toggleForm = () => {
+    setPassword("");
     setshowReg(!showReg);
     setError("");
     setErrors({ email: "", password: "", confirmPassword: "" });
@@ -120,7 +124,7 @@ const Login = () => {
                       togglePassword={togglePassword}
                       onChange={(text) => setPassword(text.target.value)}
                     />
-                    <p className="text-red-500 pt-4">{error}</p>
+                    {!showReg && (<p className="text-red-500 pt-4">{error}</p>)}
                     <div>
                       {errors.password ? (
                         <p className="text-red-500 text-sm">
@@ -171,7 +175,7 @@ const Login = () => {
                     </div>
                   )}
 
-                  {error && (
+                  {error && showReg && (
                     <p className="text-red-500 text-sm pt-2">{error}</p>
                   )}
                 </div>

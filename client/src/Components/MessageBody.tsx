@@ -69,15 +69,17 @@ const MessageBody = () => {
     //   console.log("dt", data)
     // }
     onUpdateStatus: (data: { messageId: string[], status: Status }) => {
+   
 
       if (data.messageId.length < 1) return;
-      console.log("update status for sender", data);
+     
 
       setChat((prev) => {
         if (!prev) return null;
         return {
           ...prev,
           messages: prev?.messages?.map((msg) => {
+
             const isMatch = data.messageId.includes(msg.id);
             if (!isMatch) {
               return msg;
@@ -359,7 +361,7 @@ const MessageBody = () => {
                           {message.loading ? (
                             <IoMdTime />
                           ) : message.senderId === user?.id ? (
-                            message.status === "READ" ? (
+                            message.status === "READ" || message.readBy.includes(selectedChat?.receiver?.id!) ? (
                               <span className="text-blue-500">✓✓</span>
                             ) : message.status === "DELIVERED" ? (
                               <span>✓✓</span>
