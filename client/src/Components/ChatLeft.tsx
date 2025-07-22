@@ -47,30 +47,14 @@ const ChatLeft = () => {
 
   useSocketEvents(socket, {
     onReceiveMessage: async (data: Message) => {
-      console.log("data in receive message", data);
-      console.log("Base URL:", import.meta.env.VITE_API_BASE_URL);
+      await api.post(`/messages/update/${data.chatId}`, {
+        messageId: [data.id],
+        status: "DELIVERED",
+      });
 
-
-      console.log("still running")
-
-      try {
-        console.log("trying")
-        const res = await api.post(`/messages/update/${data.chatId}`, {
-          messageId: [data.id],
-          status: "DELIVERED",
-        });    
-        console.log("res", res)
-
-      } catch (error) {
-        console.log("err", error)
-      }
-
-      console.log("still running")
       setChats((prevChats) => {
-        console.log("prev before", prevChats)
         const updatedChat = prevChats.map((chat) => {
           if (chat.id === data.chatId) {
-            console.log("true")
             return {
               ...chat,
               lastMessage: data,
@@ -79,7 +63,6 @@ const ChatLeft = () => {
           }
           return chat;
         })
-        console.log("uod", updatedChat)
         return updatedChat;
       }
       );
