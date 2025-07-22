@@ -8,19 +8,17 @@ import { useNavigate } from "react-router-dom";
 const Chats = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-      // console.log("us",user)
 
 
   useEffect(() => {
     if (!user?.name) {
-      console.log("us",user)
       navigate('/profile-setup')
     }
   }, [user])
 
   return (
     // Parent container
-    <div className="w-full flex   ">
+    <div className="w-full flex ">
       {/* Container left */}
       <ChatLeft />
       {/* Container right */}

@@ -21,7 +21,6 @@ function UpdateProfile() {
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
-    console.log(avatar)
     try {
       const response = await api.post("update-profile/", {
         name,
