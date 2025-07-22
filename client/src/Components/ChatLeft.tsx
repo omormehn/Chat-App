@@ -21,11 +21,11 @@ import axios from "axios";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
-  const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
+  const { selectedChat, setSelectedChat, setChat, setSelectedChatId } =
     chatContext();
   const { user } = useAuth();
   const { socket } = getSocket();
-  const { chats, setChats, loading, getChats } = useGetChats();
+  const { chats, setChats, loading, getChats,  } = useGetChats();
   const { users } = useGetUsers();
 
   const [open, setOpen] = useState(false);
@@ -80,12 +80,10 @@ const ChatLeft = () => {
     },
 
     onUpdateMessage: (updatedChat: Chat) => {
-      console.log("updated chat", updatedChat)
-      const updateChats = (prevChats: Chat[], newChat: Chat, userId: string) => {
-        console.log("new chat", newChat)
-        const isChat = newChat?.userIds?.includes(userId);
-        console.log("is chat", isChat)
 
+      const updateChats = (prevChats: Chat[], newChat: Chat, userId: string) => {
+
+        const isChat = newChat?.userIds?.includes(userId);
         if (!isChat) return prevChats;
 
         return prevChats.map((chat) =>
@@ -127,25 +125,38 @@ const ChatLeft = () => {
     }
 
     setSelectedChatId(chat?.id);
-    getChat(chat?.id);
 
     try {
-      await api.post(`/messages/add/update/${chat?.id}`, {
-        messageId: [chat?.lastMessage?.id],
-        status: "READ",
-      });
+      const response = await api.get(`chats/get-chat/${chat.id}`);
+      const fullChat = response.data.chat;
+      const messages = fullChat?.messages || [];
 
+      setChatDetails({ ...response.data });
+      setChat({ ...fullChat, messages });
 
-      socket?.emit("updateStatus", {
-        messageId: chat?.lastMessage?.id,
-        userId: user?.id,
-        senderId: chat?.lastMessage?.senderId,
-        status: "READ",
-      });
+      const unreadMessageIds = messages
+        .filter((msg: { senderId: string | undefined; status: string; }) => msg.senderId !== user?.id && msg.status !== "READ")
+        .map((msg: { id: any; }) => msg.id);
+
+      if (unreadMessageIds.length > 0) {
+        await api.post(`/messages/add/update/${chat.id}`, {
+          messageId: unreadMessageIds,
+          status: "READ",
+        });
+
+        socket?.emit("updateStatus", {
+          messageId: unreadMessageIds,
+          userId: user?.id,
+          senderId: fullChat.participants.find((p: string | undefined) => p !== user?.id),
+          status: "READ",
+        });
+      }
+
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
-    }
+    } 
   };
+
 
   // const getUnreadCount = (chat) => {
   //   if (selectedChat?.id === chat.id) return 0;
@@ -343,3 +354,7 @@ const ChatLeft = () => {
 };
 
 export default ChatLeft;
+function setChatDetails(arg0: any) {
+  throw new Error("Function not implemented.");
+}
+

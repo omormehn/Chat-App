@@ -12,16 +12,14 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
 
   const updateUser = (data: User) => {
     setUser(data);
   };
 
   useEffect(() => {
+    if (user) return;
     const validateToken = async () => {
       try {
         const { data } = await api.get("/auth/validate", {
@@ -29,10 +27,11 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         });
         if (!data) return;
         const id = data.user.id;
-        const userResponse = await api.get(`/user/${id}`, {
+        const { data: userResponse } = await api.get(`/user/${id}`, {
           withCredentials: true,
         });
-        setUser(userResponse.data);
+        console.log(data)
+        setUser(userResponse);
         // eslint-disable-next-line no-unused-vars
       } catch (error) {
         navigate("/login");
