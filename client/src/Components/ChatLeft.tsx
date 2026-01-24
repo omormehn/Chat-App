@@ -2,29 +2,30 @@
 import { useNavigate } from "react-router-dom";
 import { CgUserAdd } from "react-icons/cg";
 import { IoFilterOutline } from "react-icons/io5";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { PuffLoader } from "react-spinners";
-import AuthContext, { useAuth } from "../context/AuthContext";
-import ChatContext, { chatContext } from "../context/ChatContext";
+import { useAuth } from "../context/AuthContext";
+import { chatContext } from "../context/ChatContext";
 import useGetChats from "../hooks/useGetChats";
-import SocketContext, { getSocket } from "../context/SocketContext";
+import { getSocket } from "../context/SocketContext";
 import { Dialog, Card, Typography, CardBody, } from "@material-tailwind/react";
 import useGetUsers from "../hooks/useGetUsers";
-import { api } from "../utils/api";
+import { api } from "../utils/api.ts";
 import toast from "react-hot-toast";
 import useSocketEvents from "../hooks/useSocketEvents";
 import { format } from "timeago.js";
 import dayjs from "dayjs";
 import { Chat, Message, User } from "../../types/types";
 import { handleAxiosError } from "../utils/handleAxiosError";
+import axios from "axios";
 
 const ChatLeft = () => {
   const navigate = useNavigate();
-  const { selectedChat, setSelectedChat, getChat, setSelectedChatId } =
+  const { selectedChat, setSelectedChat, setChat, setSelectedChatId } =
     chatContext();
   const { user } = useAuth();
   const { socket } = getSocket();
-  const { chats, setChats, loading, getChats } = useGetChats();
+  const { chats, setChats, loading, getChats,  } = useGetChats();
   const { users } = useGetUsers();
 
   const [open, setOpen] = useState(false);
@@ -46,43 +47,42 @@ const ChatLeft = () => {
 
   useSocketEvents(socket, {
     onReceiveMessage: async (data: Message) => {
-      console.log("data", data);
-      try {
-        await api.post(`/messages/add/update/${data.chatId}`, {
-          messageId: [data.id],
-          status: "DELIVERED",
-        });
-        
-        
-        setChats((prevChats) =>
-          prevChats.map((chat) => {
-            if (chat.id === data.chatId) {
-              return {
-                ...chat,
-                lastMessage: data,
-                updatedAt: new Date().toISOString(),
-              };
-            }
-            return chat;
-          })
-        );
+      await api.post(`/messages/update/${data.chatId}`, {
+        messageId: [data.id],
+        status: "DELIVERED",
+      });
 
-        socket?.emit("updateStatus", {
-          messageId: [data.id],
-          userId: user?.id,
-          senderId: data.senderId,
-          status: "DELIVERED",
-        });
-      } catch (error) {
-        console.log("error", error);
+      setChats((prevChats) => {
+        const updatedChat = prevChats.map((chat) => {
+          if (chat.id === data.chatId) {
+            return {
+              ...chat,
+              lastMessage: data,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return chat;
+        })
+        return updatedChat;
       }
+      );
+
+      socket?.emit("updateStatus", {
+        messageId: [data.id],
+        userId: user?.id,
+        senderId: data.senderId,
+        status: "DELIVERED",
+      });
+
     },
     onNewChat: (chat: Chat) => {
       setChats((prev) => [...prev, chat]);
     },
 
     onUpdateMessage: (updatedChat: Chat) => {
+
       const updateChats = (prevChats: Chat[], newChat: Chat, userId: string) => {
+
         const isChat = newChat?.userIds?.includes(userId);
         if (!isChat) return prevChats;
 
@@ -125,25 +125,38 @@ const ChatLeft = () => {
     }
 
     setSelectedChatId(chat?.id);
-    getChat(chat?.id);
 
     try {
-      await api.post(`/messages/add/update/${chat?.id}`, {
-        messageId: [chat?.lastMessage?.id],
-        status: "READ",
-      });
+      const response = await api.get(`chats/get-chat/${chat.id}`);
+      const fullChat = response.data.chat;
+      const messages = fullChat?.messages || [];
 
+      setChatDetails({ ...response.data });
+      setChat({ ...fullChat, messages });
 
-      socket?.emit("updateStatus", {
-        messageId: chat?.lastMessage?.id,
-        userId: user?.id,
-        senderId: chat?.lastMessage?.senderId,
-        status: "READ",
-      });
+      const unreadMessageIds = messages
+        .filter((msg: { senderId: string | undefined; status: string; }) => msg.senderId !== user?.id && msg.status !== "READ")
+        .map((msg: { id: any; }) => msg.id);
+
+      if (unreadMessageIds.length > 0) {
+        await api.post(`/messages/add/update/${chat.id}`, {
+          messageId: unreadMessageIds,
+          status: "READ",
+        });
+
+        socket?.emit("updateStatus", {
+          messageId: unreadMessageIds,
+          userId: user?.id,
+          senderId: fullChat.participants.find((p: string | undefined) => p !== user?.id),
+          status: "READ",
+        });
+      }
+
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
-    }
+    } 
   };
+
 
   // const getUnreadCount = (chat) => {
   //   if (selectedChat?.id === chat.id) return 0;
@@ -341,3 +354,7 @@ const ChatLeft = () => {
 };
 
 export default ChatLeft;
+function setChatDetails(arg0: any) {
+  throw new Error("Function not implemented.");
+}
+

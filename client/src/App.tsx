@@ -1,4 +1,4 @@
-import {  Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Login from "./Pages/Login";
 import Chats from "./Pages/Chats";
 
@@ -11,19 +11,27 @@ import { Toaster } from "react-hot-toast";
 import ResetPass from "./Pages/ResetPass";
 import PassWordReset from "./Components/PassWordReset";
 import ProtectedRoute from "./context/ProtectedRoute";
+import PublicRoutes from "./context/PublicRoutes";
 
 
 function App() {
-  
+
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
       <Routes>
-        <Route path="*" element={<Login />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="*" element={
+          <PublicRoutes>
+            <Login />
+          </PublicRoutes>
+        } />
+        <Route path="/login" element={<PublicRoutes>
+          <Login />
+        </PublicRoutes>} />
         <Route path="/resetPass" element={<ResetPass />} />
         <Route path="/passReset" element={<PassWordReset />} />
         <Route path="/profile-setup" element={<CompleteProfile />} />
+        
         {/* Protected Routes */}
         <Route
           path="/forgot-password"

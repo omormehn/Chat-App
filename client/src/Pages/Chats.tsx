@@ -9,6 +9,7 @@ const Chats = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+
   useEffect(() => {
     if (!user?.name) {
       navigate('/profile-setup')
@@ -17,7 +18,7 @@ const Chats = () => {
 
   return (
     // Parent container
-    <div className="w-full flex   ">
+    <div className="w-full flex ">
       {/* Container left */}
       <ChatLeft />
       {/* Container right */}
